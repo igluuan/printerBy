@@ -64,12 +64,12 @@ $marcas = $conn->query("SELECT DISTINCT marca FROM impressoras ORDER BY marca")-
                 <label class="form-label" style="margin-bottom: 0.35rem;">Status</label>
                 <select name="status" class="form-select">
                     <option value="">Todos os status</option>
-                    <option value="ativo" <?= $status == 'ativo' ? 'selected' : '' ?>>✓ Ativo</option>
-                    <option value="manutencao" <?= $status == 'manutencao' ? 'selected' : '' ?>>⚙️ Manutenção</option>
+                    <option value="equipamento_completo" <?= $status == 'equipamento_completo' ? 'selected' : '' ?>>✓ Equipamento Completo</option>
+                    <option value="equipamento_manutencao" <?= $status == 'equipamento_manutencao' ? 'selected' : '' ?>>⚙️ Equipamento Precisa de Manutenção</option>
                     <option value="inativo" <?= $status == 'inativo' ? 'selected' : '' ?>>✗ Inativo</option>
                 </select>
             </div>
-            <div class="button-group">
+            <div class="button-group mt-2">
                 <button type="submit" class="btn btn-primary">Filtrar</button>
                 <a href="index.php" class="btn btn-secondary">Limpar</a>
             </div>
@@ -107,8 +107,8 @@ $marcas = $conn->query("SELECT DISTINCT marca FROM impressoras ORDER BY marca")-
                         <td class="d-none d-md-table-cell"><code style="font-size: 0.75rem;"><?= htmlspecialchars(substr($imp['numero_serie'], 0, 8)) ?></code></td>
                         <td class="d-none d-lg-table-cell"><?= htmlspecialchars($imp['localizacao']) ?></td>
                         <td>
-                            <span class="badge bg-<?= $imp['status'] == 'ativo' ? 'success' : ($imp['status'] == 'manutencao' ? 'warning' : 'secondary') ?>">
-                                <?= ucfirst($imp['status']) ?>
+                            <span class="badge bg-<?= in_array($imp['status'], ['equipamento_completo', 'ativo']) ? 'success' : (in_array($imp['status'], ['equipamento_manutencao', 'manutencao']) ? 'warning' : 'secondary') ?>">
+                                <?= $imp['status'] == 'equipamento_completo' || $imp['status'] == 'ativo' ? 'Completo' : ($imp['status'] == 'equipamento_manutencao' || $imp['status'] == 'manutencao' ? 'Manutenção' : 'Inativo') ?>
                             </span>
                         </td>
                         <td class="d-none d-sm-table-cell"><?= number_format($imp['contagem_paginas'], 0, ',', '.') ?></td>

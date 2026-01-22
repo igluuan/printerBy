@@ -62,7 +62,16 @@ include 'includes/header.php';
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Marca *</label>
-                    <input type="text" name="marca" class="form-control" value="<?= htmlspecialchars($impressora['marca']) ?>" required>
+                    <select name="marca" class="form-select" required>
+                        <option value="">Selecione uma marca...</option>
+                        <option value="HP" <?= $impressora['marca'] == 'HP' ? 'selected' : '' ?>>HP</option>
+                        <option value="BROTHER" <?= $impressora['marca'] == 'BROTHER' ? 'selected' : '' ?>>BROTHER</option>
+                        <option value="SAMSUNG" <?= $impressora['marca'] == 'SAMSUNG' ? 'selected' : '' ?>>SAMSUNG</option>
+                        <option value="OKIDATA" <?= $impressora['marca'] == 'OKIDATA' ? 'selected' : '' ?>>OKIDATA</option>
+                        <option value="KYOCERA" <?= $impressora['marca'] == 'KYOCERA' ? 'selected' : '' ?>>KYOCERA</option>
+                        <option value="CANON" <?= $impressora['marca'] == 'CANON' ? 'selected' : '' ?>>CANON</option>
+                        <option value="RICOH" <?= $impressora['marca'] == 'RICOH' ? 'selected' : '' ?>>RICOH</option>
+                    </select>
                 </div>
             </div>
             
@@ -81,8 +90,8 @@ include 'includes/header.php';
                 <div class="col-md-6">
                     <label class="form-label">Status *</label>
                     <select name="status" class="form-select" required>
-                        <option value="ativo" <?= $impressora['status'] == 'ativo' ? 'selected' : '' ?>>✓ Ativo</option>
-                        <option value="manutencao" <?= $impressora['status'] == 'manutencao' ? 'selected' : '' ?>>⚙️ Manutenção</option>
+                        <option value="equipamento_completo" <?= $impressora['status'] == 'equipamento_completo' ? 'selected' : '' ?>>✓ Equipamento Completo</option>
+                        <option value="equipamento_manutencao" <?= $impressora['status'] == 'equipamento_manutencao' ? 'selected' : '' ?>>⚙️ Equipamento Precisa de Manutenção</option>
                         <option value="inativo" <?= $impressora['status'] == 'inativo' ? 'selected' : '' ?>>✗ Inativo</option>
                     </select>
                 </div>

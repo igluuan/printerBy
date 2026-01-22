@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config/database.php';
 require_once 'config/timezone.php';
 
@@ -6,25 +7,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $db = new Database();
     $conn = $db->connect();
     
+    // Sanitizar e validar todos os campos
+    $modelo = trim($_POST['modelo'] ?? '');
+    $marca = trim($_POST['marca'] ?? '');
+    $numero_serie = trim($_POST['numero_serie'] ?? '');
+    $localizacao = trim($_POST['localizacao'] ?? '');
+    $status = trim($_POST['status'] ?? 'equipamento_completo');
+    $contagem_paginas = isset($_POST['contagem_paginas']) ? (int)$_POST['contagem_paginas'] : 0;
+      
     $sql = "INSERT INTO impressoras (modelo, marca, numero_serie, localizacao, status, contagem_paginas) 
             VALUES (:modelo, :marca, :numero_serie, :localizacao, :status, :contagem_paginas)";
     
     $stmt = $conn->prepare($sql);
     
     try {
-        $stmt->execute([
-            ':modelo' => $_POST['modelo'],
-            ':marca' => $_POST['marca'],
-            ':numero_serie' => $_POST['numero_serie'],
-            ':localizacao' => $_POST['localizacao'],
-            ':status' => $_POST['status'],
-            ':contagem_paginas' => $_POST['contagem_paginas']
+        $result = $stmt->execute([
+            ':modelo' => $modelo,
+            ':marca' => $marca,
+            ':numero_serie' => $numero_serie,
+            ':localizacao' => $localizacao,
+            ':status' => $status,
+            ':contagem_paginas' => $contagem_paginas
         ]);
-        header('Location: index.php');
-        exit;
+        
+        if ($result) {
+            $_SESSION['debug_logs'] = $logs;
+            header('Location: index.php');
+            exit;
+        } else {
+            $erro = "Erro: Falha ao inserir dados no banco.";
+            $logs[] = "Falha ao inserir: Nenhuma exceção mas execute retornou false";
+        }
     } catch(PDOException $e) {
         $erro = "Erro ao cadastrar: " . $e->getMessage();
     }
+    
+    // Guardar logs na sessão para exibir
+    $_SESSION['debug_logs'] = $logs;
 }
 
 include 'includes/header.php';
@@ -47,7 +66,16 @@ include 'includes/header.php';
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Marca *</label>
-                    <input type="text" name="marca" class="form-control" placeholder="Ex: HP" required>
+                    <select name="marca" class="form-select" required>
+                        <option value="">Selecione uma marca...</option>
+                        <option value="HP">HP</option>
+                        <option value="BROTHER">BROTHER</option>
+                        <option value="SAMSUNG">SAMSUNG</option>
+                        <option value="OKIDATA">OKIDATA</option>
+                        <option value="KYOCERA">KYOCERA</option>
+                        <option value="CANON">CANON</option>
+                        <option value="RICOH">RICOH</option>
+                    </select>
                 </div>
             </div>
             
@@ -66,8 +94,9 @@ include 'includes/header.php';
                 <div class="col-md-6">
                     <label class="form-label">Status *</label>
                     <select name="status" class="form-select" required>
-                        <option value="ativo">✓ Ativo</option>
-                        <option value="manutencao">⚙️ Manutenção</option>
+                        <option value="">-- Selecione um status --</option>
+                        <option value="equipamento_completo" selected>✓ Equipamento Completo</option>
+                        <option value="equipamento_manutencao">⚙️ Equipamento Precisa de Manutenção</option>
                         <option value="inativo">✗ Inativo</option>
                     </select>
                 </div>

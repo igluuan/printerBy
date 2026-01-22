@@ -69,8 +69,8 @@ include 'includes/header.php';
                     </div>
                     <div>
                         <strong style="display: block; font-size: 0.85rem; color: #666;">Status</strong>
-                        <span class="badge bg-<?= $impressora['status'] == 'ativo' ? 'success' : ($impressora['status'] == 'manutencao' ? 'warning' : 'secondary') ?>" style="margin-top: 0.25rem;">
-                            <?= ucfirst($impressora['status']) ?>
+                        <span class="badge bg-<?= in_array($impressora['status'], ['equipamento_completo', 'ativo']) ? 'success' : (in_array($impressora['status'], ['equipamento_manutencao', 'manutencao']) ? 'warning' : 'secondary') ?>" style="margin-top: 0.25rem;">
+                            <?= in_array($impressora['status'], ['equipamento_completo', 'ativo']) ? 'Equipamento Completo' : (in_array($impressora['status'], ['equipamento_manutencao', 'manutencao']) ? 'Equipamento Precisa de Manutenção' : 'Inativo') ?>
                         </span>
                     </div>
                     <div>
