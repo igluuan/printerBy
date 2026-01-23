@@ -204,7 +204,7 @@ try {
             <div class="card" style="height: 100%; display: flex; flex-direction: column;">
                 
                 <!-- BODY DO CARD -->
-                <div class="card-body" style="flex: 1; padding: 1.5rem;">
+                <div class="card-body" style="flex: 1; padding: 1.5rem; background: #0858d1;">
                     <h6 style="margin: 0 0 0.5rem 0; font-weight: bold; font-size: 1.1rem;">
                         <?= htmlspecialchars($imp['modelo']) ?>
                     </h6>
