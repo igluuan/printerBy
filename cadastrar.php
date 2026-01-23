@@ -4,8 +4,7 @@ require_once 'config/database.php';
 require_once 'config/timezone.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $db = new Database();
-    $conn = $db->connect();
+    $conn = Database::getInstance();
     
     // Sanitizar e validar todos os campos
     $modelo = trim($_POST['modelo'] ?? '');

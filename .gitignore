@@ -6,3 +6,8 @@ teste-timezone.php
 README.md
 migrar-status.php
 MELHORIAS_MOBILE.md
+.env
+*.log
+.env.example
+ANALISE_DESEMPENHO.md
+CORRECOES_IMPLEMENTADAS.md

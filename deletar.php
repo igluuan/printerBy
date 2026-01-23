@@ -2,8 +2,7 @@
 require_once 'config/database.php';
 require_once 'config/timezone.php';
 
-$db = new Database();
-$conn = $db->connect();
+$conn = Database::getInstance();
 
 $id = $_GET['id'] ?? 0;
 

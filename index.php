@@ -3,41 +3,56 @@ require_once 'config/database.php';
 require_once 'config/timezone.php';
 include 'includes/header.php';
 
-$db = new Database();
-$conn = $db->connect();
+$conn = Database::getInstance();
 
 // Capturar filtros
 $busca = $_GET['busca'] ?? '';
 $marca = $_GET['marca'] ?? '';
 $status = $_GET['status'] ?? '';
+$pagina = max(1, (int)($_GET['page'] ?? 1));
+$por_pagina = 25;
+$offset = ($pagina - 1) * $por_pagina;
 
-// Montar query dinâmica
-$sql = "SELECT * FROM impressoras WHERE 1=1";
+// Montar query dinâmica (sem LIMIT para contagem)
+$sql_base = "FROM impressoras WHERE 1=1";
 $params = [];
 
 if ($busca) {
-    $sql .= " AND (modelo LIKE :busca OR numero_serie LIKE :busca OR localizacao LIKE :busca)";
+    $sql_base .= " AND (modelo LIKE :busca OR numero_serie LIKE :busca OR localizacao LIKE :busca)";
     $params[':busca'] = "%$busca%";
 }
 
 if ($marca) {
-    $sql .= " AND marca = :marca";
+    $sql_base .= " AND marca = :marca";
     $params[':marca'] = $marca;
 }
 
 if ($status) {
-    $sql .= " AND status = :status";
+    $sql_base .= " AND status = :status";
     $params[':status'] = $status;
 }
 
-$sql .= " ORDER BY data_cadastro DESC";
+// Contar total de registros
+$stmt_count = $conn->prepare("SELECT COUNT(*) as total " . $sql_base);
+$stmt_count->execute($params);
+$total_registros = $stmt_count->fetch()['total'];
+$total_paginas = ceil($total_registros / $por_pagina);
+
+// Buscar impressoras com paginação
+$sql = "SELECT * " . $sql_base . " ORDER BY data_cadastro DESC LIMIT :limit OFFSET :offset";
+$params[':limit'] = $por_pagina;
+$params[':offset'] = $offset;
 
 $stmt = $conn->prepare($sql);
 $stmt->execute($params);
 $impressoras = $stmt->fetchAll();
 
-// Buscar marcas únicas para filtro
-$marcas = $conn->query("SELECT DISTINCT marca FROM impressoras ORDER BY marca")->fetchAll(PDO::FETCH_COLUMN);
+// Buscar marcas únicas para filtro (com cache simples)
+if (empty($_SESSION['marcas_cache']) || time() - ($_SESSION['marcas_cache_time'] ?? 0) > 3600) {
+    $_SESSION['marcas_cache'] = $conn->query("SELECT DISTINCT marca FROM impressoras WHERE marca IS NOT NULL ORDER BY marca")->fetchAll(PDO::FETCH_COLUMN);
+    $_SESSION['marcas_cache_time'] = time();
+}
+$marcas = $_SESSION['marcas_cache'];
 ?>
 
 <!-- FORM DE FILTROS -->
@@ -80,7 +95,7 @@ $marcas = $conn->query("SELECT DISTINCT marca FROM impressoras ORDER BY marca")-
 <!-- TABELA DE IMPRESSORAS -->
 <div class="card">
     <div class="card-header">
-        <h5 style="margin: 0; font-size: 1rem;">Impressoras Cadastradas</h5>
+        <h5 style="margin: 0; font-size: 1rem;">📋 Impressoras Cadastradas</h5>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -129,6 +144,53 @@ $marcas = $conn->query("SELECT DISTINCT marca FROM impressoras ORDER BY marca")-
             </tbody>
         </table>
     </div>
+    
+    <!-- PAGINAÇÃO -->
+    <?php if ($total_paginas > 1): ?>
+    <nav class="navbar bg-light border-top" style="padding: 0.75rem 1rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; font-size: 0.9rem;">
+            <span class="text-muted">Página <?= $pagina ?> de <?= $total_paginas ?> (<?= $total_registros ?> total)</span>
+            
+            <div style="display: flex; gap: 0.25rem; margin-left: auto;">
+                <!-- Primeira página -->
+                <?php if ($pagina > 1): ?>
+                    <a href="?page=1&busca=<?= urlencode($busca) ?>&marca=<?= urlencode($marca) ?>&status=<?= urlencode($status) ?>" class="btn btn-sm btn-outline-secondary" title="Primeira">«</a>
+                    <a href="?page=<?= $pagina - 1 ?>&busca=<?= urlencode($busca) ?>&marca=<?= urlencode($marca) ?>&status=<?= urlencode($status) ?>" class="btn btn-sm btn-outline-secondary" title="Anterior">‹</a>
+                <?php else: ?>
+                    <button class="btn btn-sm btn-outline-secondary" disabled>«</button>
+                    <button class="btn btn-sm btn-outline-secondary" disabled>‹</button>
+                <?php endif; ?>
+                
+                <!-- Números de página -->
+                <?php 
+                $inicio = max(1, $pagina - 2);
+                $fim = min($total_paginas, $pagina + 2);
+                
+                if ($inicio > 1) echo '<span class="text-muted" style="padding: 0 0.25rem;">...</span>';
+                
+                for ($i = $inicio; $i <= $fim; $i++) {
+                    if ($i == $pagina) {
+                        echo '<button class="btn btn-sm btn-secondary" disabled>' . $i . '</button>';
+                    } else {
+                        echo '<a href="?page=' . $i . '&busca=' . urlencode($busca) . '&marca=' . urlencode($marca) . '&status=' . urlencode($status) . '" class="btn btn-sm btn-outline-secondary">' . $i . '</a>';
+                    }
+                }
+                
+                if ($fim < $total_paginas) echo '<span class="text-muted" style="padding: 0 0.25rem;">...</span>';
+                ?>
+                
+                <!-- Última página -->
+                <?php if ($pagina < $total_paginas): ?>
+                    <a href="?page=<?= $pagina + 1 ?>&busca=<?= urlencode($busca) ?>&marca=<?= urlencode($marca) ?>&status=<?= urlencode($status) ?>" class="btn btn-sm btn-outline-secondary" title="Próxima">›</a>
+                    <a href="?page=<?= $total_paginas ?>&busca=<?= urlencode($busca) ?>&marca=<?= urlencode($marca) ?>&status=<?= urlencode($status) ?>" class="btn btn-sm btn-outline-secondary" title="Última">»</a>
+                <?php else: ?>
+                    <button class="btn btn-sm btn-outline-secondary" disabled>›</button>
+                    <button class="btn btn-sm btn-outline-secondary" disabled>»</button>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+    <?php endif; ?>
 </div>
 
 <?php include 'includes/footer.php'; ?>
