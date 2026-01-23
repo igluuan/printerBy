@@ -95,11 +95,19 @@ try {
 
         // Buscar impressoras com paginação
         $sql = "SELECT * " . $sql_base . " ORDER BY data_cadastro DESC LIMIT :limit OFFSET :offset";
-        $params[':limit'] = $por_pagina;
-        $params[':offset'] = $offset;
-
+        
         $stmt = $conn->prepare($sql);
-        $stmt->execute($params);
+        
+        // Executar cada parâmetro com seus tipos específicos
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        
+        // Vincular LIMIT e OFFSET com tipos inteiros explícitos
+        $stmt->bindValue(':limit', (int)$por_pagina, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        
+        $stmt->execute();
         $impressoras = $stmt->fetchAll();
 
         // Buscar marcas únicas para filtro (com cache simples)
