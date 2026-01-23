@@ -191,58 +191,71 @@ try {
     </div>
 </div>
 
-<!-- TABELA DE IMPRESSORAS -->
-<div class="card">
-    <div class="card-header">
-        <h5 style="margin: 0; font-size: 1rem;">📋 Impressoras Cadastradas</h5>
+<!-- CARDS DE IMPRESSORAS -->
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <h5 style="margin: 0; font-size: 1.1rem;">📋 Impressoras Cadastradas</h5>
+        <span class="badge bg-secondary"><?= $total_registros ?> total</span>
     </div>
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Modelo</th>
-                    <th class="d-none d-sm-table-cell">Marca</th>
-                    <th class="d-none d-md-table-cell">Série</th>
-                    <th class="d-none d-lg-table-cell">Local</th>
-                    <th>Status</th>
-                    <th class="d-none d-sm-table-cell">Pág.</th>
-                    <th style="text-align: center;">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (count($impressoras) > 0): ?>
-                    <?php foreach($impressoras as $imp): ?>
-                    <tr>
-                        <td>
-                            <strong><?= htmlspecialchars($imp['modelo']) ?></strong>
-                            <br><small class="text-muted d-sm-none"><?= htmlspecialchars($imp['marca']) ?></small>
-                        </td>
-                        <td class="d-none d-sm-table-cell"><?= htmlspecialchars($imp['marca']) ?></td>
-                        <td class="d-none d-md-table-cell"><code style="font-size: 0.75rem;"><?= htmlspecialchars(substr($imp['numero_serie'], 0, 8)) ?></code></td>
-                        <td class="d-none d-lg-table-cell"><?= htmlspecialchars($imp['localizacao']) ?></td>
-                        <td>
-                            <span class="badge bg-<?= in_array($imp['status'], ['equipamento_completo', 'ativo']) ? 'success' : (in_array($imp['status'], ['equipamento_manutencao', 'manutencao']) ? 'warning' : 'secondary') ?>">
-                                <?= $imp['status'] == 'equipamento_completo' || $imp['status'] == 'ativo' ? 'Completo' : ($imp['status'] == 'equipamento_manutencao' || $imp['status'] == 'manutencao' ? 'Manutenção' : 'Inativo') ?>
-                            </span>
-                        </td>
-                        <td class="d-none d-sm-table-cell"><?= number_format($imp['contagem_paginas'], 0, ',', '.') ?></td>
-                        <td style="text-align: center;">
-                            <div class="btn-group btn-group-sm" role="group" style="display: flex; gap: 0.25rem; justify-content: center; flex-wrap: wrap;">
-                                <a href="detalhes.php?id=<?= $imp['id'] ?>" class="btn btn-info" title="Ver detalhes">👁️</a>
-                                <a href="editar.php?id=<?= $imp['id'] ?>" class="btn btn-warning" title="Editar">✏️</a>
-                                <a href="deletar.php?id=<?= $imp['id'] ?>" class="btn btn-danger" title="Excluir" onclick="return confirm('Confirma exclusão?')">🗑️</a>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">Nenhuma impressora encontrada</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+    
+    <?php if (count($impressoras) > 0): ?>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            <?php foreach($impressoras as $imp): ?>
+            <div class="card" style="border-left: 4px solid <?= in_array($imp['status'], ['equipamento_completo', 'ativo']) ? '#28a745' : (in_array($imp['status'], ['equipamento_manutencao', 'manutencao']) ? '#ffc107' : '#6c757d') ?>; height: 100%; display: flex; flex-direction: column;">
+                
+                <!-- HEADER DO CARD -->
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <h6 style="margin: 0; font-weight: bold; font-size: 1rem;">
+                                <?= htmlspecialchars($imp['modelo']) ?>
+                            </h6>
+                            <small style="opacity: 0.9;">
+                                <?= htmlspecialchars($imp['marca']) ?>
+                            </small>
+                        </div>
+                        <span class="badge bg-<?= in_array($imp['status'], ['equipamento_completo', 'ativo']) ? 'success' : (in_array($imp['status'], ['equipamento_manutencao', 'manutencao']) ? 'warning' : 'secondary') ?>">
+                            <?= $imp['status'] == 'equipamento_completo' || $imp['status'] == 'ativo' ? '✓' : ($imp['status'] == 'equipamento_manutencao' || $imp['status'] == 'manutencao' ? '⚙️' : '✗') ?>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- BODY DO CARD -->
+                <div class="card-body" style="flex: 1; padding: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+                        <div>
+                            <small class="text-muted d-block">📍 Local</small>
+                            <strong><?= htmlspecialchars($imp['localizacao']) ?></strong>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">📄 Páginas</small>
+                            <strong><?= number_format($imp['contagem_paginas'], 0, ',', '.') ?></strong>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e9ecef;">
+                        <small class="text-muted d-block">🔢 Série</small>
+                        <code style="font-size: 0.8rem; word-break: break-all;">
+                            <?= htmlspecialchars(substr($imp['numero_serie'], 0, 12)) ?>...
+                        </code>
+                    </div>
+                </div>
+                
+                <!-- FOOTER DO CARD (AÇÕES) -->
+                <div class="card-footer" style="background: #f8f9fa; border-top: 1px solid #dee2e6; display: flex; gap: 0.5rem; padding: 0.75rem;">
+                    <a href="detalhes.php?id=<?= $imp['id'] ?>" class="btn btn-sm btn-outline-info flex-grow-1" title="Ver detalhes">👁️ Ver</a>
+                    <a href="editar.php?id=<?= $imp['id'] ?>" class="btn btn-sm btn-outline-warning flex-grow-1" title="Editar">✏️ Editar</a>
+                    <a href="deletar.php?id=<?= $imp['id'] ?>" class="btn btn-sm btn-outline-danger flex-grow-1" title="Excluir" onclick="return confirm('Confirma exclusão?')">🗑️ Excluir</a>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-info text-center py-5">
+            <h5>📭 Nenhuma impressora encontrada</h5>
+            <p class="mb-0">Tente ajustar seus filtros ou <a href="cadastrar.php">criar uma nova impressora</a></p>
+        </div>
+    <?php endif; ?>
     
     <!-- PAGINAÇÃO -->
     <?php if ($total_paginas > 1): ?>
