@@ -201,28 +201,18 @@ try {
     <?php if (count($impressoras) > 0): ?>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
             <?php foreach($impressoras as $imp): ?>
-            <div class="card" style="border-left: 4px solid <?= in_array($imp['status'], ['equipamento_completo', 'ativo']) ? '#28a745' : (in_array($imp['status'], ['equipamento_manutencao', 'manutencao']) ? '#ffc107' : '#6c757d') ?>; height: 100%; display: flex; flex-direction: column;">
-                
-                <!-- HEADER DO CARD -->
-                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <h6 style="margin: 0; font-weight: bold; font-size: 1rem;">
-                                <?= htmlspecialchars($imp['modelo']) ?>
-                            </h6>
-                            <small style="opacity: 0.9;">
-                                <?= htmlspecialchars($imp['marca']) ?>
-                            </small>
-                        </div>
-                        <span class="badge bg-<?= in_array($imp['status'], ['equipamento_completo', 'ativo']) ? 'success' : (in_array($imp['status'], ['equipamento_manutencao', 'manutencao']) ? 'warning' : 'secondary') ?>">
-                            <?= $imp['status'] == 'equipamento_completo' || $imp['status'] == 'ativo' ? '✓' : ($imp['status'] == 'equipamento_manutencao' || $imp['status'] == 'manutencao' ? '⚙️' : '✗') ?>
-                        </span>
-                    </div>
-                </div>
+            <div class="card" style="height: 100%; display: flex; flex-direction: column;">
                 
                 <!-- BODY DO CARD -->
-                <div class="card-body" style="flex: 1; padding: 1rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+                <div class="card-body" style="flex: 1; padding: 1.5rem;">
+                    <h6 style="margin: 0 0 0.5rem 0; font-weight: bold; font-size: 1.1rem;">
+                        <?= htmlspecialchars($imp['modelo']) ?>
+                    </h6>
+                    <small class="text-muted" style="display: block; margin-bottom: 1rem;">
+                        <?= htmlspecialchars($imp['marca']) ?>
+                    </small>
+                    
+                    <div style="font-size: 0.95rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                         <div>
                             <small class="text-muted d-block">📍 Local</small>
                             <strong><?= htmlspecialchars($imp['localizacao']) ?></strong>
@@ -233,11 +223,16 @@ try {
                         </div>
                     </div>
                     
-                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e9ecef;">
-                        <small class="text-muted d-block">🔢 Série</small>
-                        <code style="font-size: 0.8rem; word-break: break-all;">
-                            <?= htmlspecialchars(substr($imp['numero_serie'], 0, 12)) ?>...
-                        </code>
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-top: 1rem; border-top: 1px solid #e9ecef;">
+                        <div style="flex: 1;">
+                            <small class="text-muted d-block">🔢 Série</small>
+                            <code style="font-size: 0.85rem; word-break: break-all;">
+                                <?= htmlspecialchars($imp['numero_serie']) ?>
+                            </code>
+                        </div>
+                        <span class="badge bg-<?= in_array($imp['status'], ['equipamento_completo', 'ativo']) ? 'success' : (in_array($imp['status'], ['equipamento_manutencao', 'manutencao']) ? 'warning' : 'secondary') ?>" style="white-space: nowrap;">
+                            <?= $imp['status'] == 'equipamento_completo' || $imp['status'] == 'ativo' ? '✓ Completo' : ($imp['status'] == 'equipamento_manutencao' || $imp['status'] == 'manutencao' ? '⚙️ Manutenção' : '✗ Inativo') ?>
+                        </span>
                     </div>
                 </div>
                 
