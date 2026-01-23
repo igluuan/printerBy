@@ -1,43 +1,49 @@
 <?php
 session_start();
+
+// Variáveis padrão
+$impressoras = [];
+$marcas = [];
+$total_registros = 0;
+$total_paginas = 0;
+$error_message = null;
+$conn = null;
+
+// Carregar configurações
 require_once 'config/database.php';
 require_once 'config/timezone.php';
 
-// Tentar conexão
-$conn = null;
-$error_message = null;
-
+// Tentar conectar ao banco ANTES de incluir header
 try {
     $conn = Database::getInstance();
 } catch(Exception $e) {
     $error_message = $e->getMessage();
-    $conn = null;
 }
 
+// Incluir header (não gera erro mesmo se conexão falhar)
 include 'includes/header.php';
 
-// Se houve erro de conexão, exibir mensagem e parar
-if ($conn === null || $error_message !== null) {
+// Se houve erro de conexão, exibir e parar
+if ($error_message !== null) {
     ?>
     <div class="alert alert-danger" style="margin: 20px;">
         <h4>❌ Erro de Conexão ao Banco de Dados</h4>
-        <p><strong>Detalhes:</strong> <?= htmlspecialchars($error_message ?? 'Conexão nula') ?></p>
+        <p><strong>Detalhes:</strong> <?= htmlspecialchars($error_message) ?></p>
         <hr/>
         <p><strong>Possíveis causas:</strong></p>
-        <ul>
+        <ul style="margin-bottom: 0;">
             <li>Servidor MySQL não está acessível</li>
             <li>Credenciais incorretas no arquivo .env</li>
             <li>Problema de conectividade de rede/internet</li>
             <li>Servidor offline ou indisponível</li>
         </ul>
-        <p><a href="teste-credenciais.php" class="btn btn-warning">Testar Credenciais</a></p>
     </div>
     <?php
     include 'includes/footer.php';
     exit;
 }
 
-// Se conexão está OK, continuar normalmente
+// Se conexão está OK, carregar dados
 try {
 
     // Capturar filtros
