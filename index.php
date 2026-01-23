@@ -80,7 +80,7 @@ $marcas = $conn->query("SELECT DISTINCT marca FROM impressoras ORDER BY marca")-
 <!-- TABELA DE IMPRESSORAS -->
 <div class="card">
     <div class="card-header">
-        <h5 style="margin: 0; font-size: 1rem;">📋 Impressoras Cadastradas</h5>
+        <h5 style="margin: 0; font-size: 1rem;">Impressoras Cadastradas</h5>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
