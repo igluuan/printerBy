@@ -36,25 +36,6 @@ try {
     // Incluir header (agora é 100% seguro)
     include 'includes/header.php';
 
-    // Se houve erro de conexão, exibir e parar
-    if ($error_message !== null) {
-        ?>
-        <div class="alert alert-danger" style="margin: 20px;">
-            <h4>❌ Erro de Conexão ao Banco de Dados</h4>
-            <p><strong>Detalhes:</strong> <?= htmlspecialchars($error_message) ?></p>
-            <hr/>
-            <p><strong>Possíveis causas:</strong></p>
-            <ul style="margin-bottom: 0;">
-                <li>Servidor MySQL não está acessível</li>
-                <li>Credenciais incorretas no arquivo .env</li>
-                <li>Problema de conectividade de rede/internet</li>
-                <li>Servidor offline ou indisponível</li>
-            </ul>
-        </div>
-        <?php
-        include 'includes/footer.php';
-        exit;
-    }
 
     // Se conexão está OK, carregar dados
     try {

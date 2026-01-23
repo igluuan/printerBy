@@ -26,9 +26,9 @@
 <body>
 <nav class="navbar navbar-dark bg-dark mb-3 mb-md-4">
     <div class="container-fluid px-2 px-sm-3">
-        <a href="index.php" class="navbar-brand mb-0 h1">🖨️ Impressoras</a>
+        <a href="index.php" class="navbar-brand mb-0 h1">🖨️ Controle de impressoras</a>
         <a href="cadastrar.php" class="btn btn-success btn-sm" style="white-space: nowrap;">
-            <span class="d-none d-sm-inline">+ Novo</span>
+            <span class="d-none d-sm-inline">Novo equipamento</span>
             <span class="d-sm-none">+</span>
         </a>
     </div>
