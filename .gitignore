@@ -1,2 +1,8 @@
 config/database.php
 setup.sql
+VERIFICACAO_TIMEZONE.txt
+TIMEZONE_BRASIL.md
+teste-timezone.php
+README.md
+migrar-status.php
+MELHORIAS_MOBILE.md
