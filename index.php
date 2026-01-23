@@ -2,10 +2,43 @@
 session_start();
 require_once 'config/database.php';
 require_once 'config/timezone.php';
-include 'includes/header.php';
+
+// Tentar conexão
+$conn = null;
+$error_message = null;
 
 try {
     $conn = Database::getInstance();
+} catch(Exception $e) {
+    $error_message = $e->getMessage();
+    $conn = null;
+}
+
+include 'includes/header.php';
+
+// Se houve erro de conexão, exibir mensagem e parar
+if ($conn === null || $error_message !== null) {
+    ?>
+    <div class="alert alert-danger" style="margin: 20px;">
+        <h4>❌ Erro de Conexão ao Banco de Dados</h4>
+        <p><strong>Detalhes:</strong> <?= htmlspecialchars($error_message ?? 'Conexão nula') ?></p>
+        <hr/>
+        <p><strong>Possíveis causas:</strong></p>
+        <ul>
+            <li>Servidor MySQL não está acessível</li>
+            <li>Credenciais incorretas no arquivo .env</li>
+            <li>Problema de conectividade de rede/internet</li>
+            <li>Servidor offline ou indisponível</li>
+        </ul>
+        <p><a href="teste-credenciais.php" class="btn btn-warning">Testar Credenciais</a></p>
+    </div>
+    <?php
+    include 'includes/footer.php';
+    exit;
+}
+
+// Se conexão está OK, continuar normalmente
+try {
 
     // Capturar filtros
     $busca = $_GET['busca'] ?? '';
@@ -68,9 +101,19 @@ try {
 }
 ?>
 
-<?php if (isset($error_message)): ?>
+<?php if (isset($error_message) && $error_message !== null): ?>
 <div class="alert alert-danger mb-4">
-    <strong>❌ Erro:</strong> <?= $error_message ?>
+    <strong>❌ Erro ao Carregar Impressoras:</strong> <?= $error_message ?>
+    <hr/>
+    <small>
+        <p><strong>Possíveis causas:</strong></p>
+        <ul style="margin-bottom: 0;">
+            <li>Servidor MySQL não está acessível</li>
+            <li>Credenciais incorretas no arquivo .env</li>
+            <li>Problema de conectividade de rede</li>
+            <li>Servidor offline</li>
+        </ul>
+    </small>
 </div>
 <?php endif; ?>
 
