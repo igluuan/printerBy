@@ -7,4 +7,11 @@ README.md
 migrar-status.php
 MELHORIAS_MOBILE.md
 .env
+<<<<<<< HEAD
 error.log
+=======
+*.log
+.env.example
+ANALISE_DESEMPENHO.md
+CORRECOES_IMPLEMENTADAS.md
+>>>>>>> 15a43f90194c2075ff9433cf14057064f9f75b19

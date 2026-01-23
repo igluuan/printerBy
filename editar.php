@@ -1,48 +1,69 @@
 <?php
-require_once 'config/database.php';
-require_once 'config/timezone.php';
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
-$db = new Database();
-$conn = $db->connect();
+try {
+    require_once 'config/database.php';
+    require_once 'config/timezone.php';
 
-$id = $_GET['id'] ?? 0;
+    $conn = Database::getInstance();
 
-// Buscar impressora
-$stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
-$stmt->execute([':id' => $id]);
-$impressora = $stmt->fetch();
+    $id = $_GET['id'] ?? 0;
 
-if (!$impressora) {
-    header('Location: index.php');
+    // Buscar impressora
+    $stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
+    $stmt->execute([':id' => $id]);
+    $impressora = $stmt->fetch();
+
+    if (!$impressora) {
+        ob_end_clean();
+        header('Location: index.php');
+        exit;
+    }
+
+    // Atualizar impressora
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $sql = "UPDATE impressoras SET modelo = :modelo, marca = :marca, numero_serie = :numero_serie, 
+                localizacao = :localizacao, status = :status, contagem_paginas = :contagem_paginas 
+                WHERE id = :id";
+        
+        $stmt = $conn->prepare($sql);
+        
+        try {
+            $stmt->execute([
+                ':modelo' => $_POST['modelo'],
+                ':marca' => $_POST['marca'],
+                ':numero_serie' => $_POST['numero_serie'],
+                ':localizacao' => $_POST['localizacao'],
+                ':status' => $_POST['status'],
+                ':contagem_paginas' => $_POST['contagem_paginas'],
+                ':id' => $id
+            ]);
+            ob_end_clean();
+            header('Location: detalhes.php?id=' . $id);
+            exit;
+        } catch(Exception $e) {
+            $erro = "Erro ao atualizar: " . $e->getMessage();
+        }
+    }
+
+    ob_end_clean();
+    include 'includes/header.php';
+    
+} catch(Exception $e) {
+    ob_end_clean();
+    header('Content-Type: text/html; charset=utf-8');
+    http_response_code(500);
+    ?>
+    <!DOCTYPE html>
+    <html><head><title>Erro</title></head><body>
+    <h1>Erro 500</h1>
+    <p><?= htmlspecialchars($e->getMessage()) ?></p>
+    </body></html>
+    <?php
     exit;
 }
-
-// Atualizar impressora
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $sql = "UPDATE impressoras SET modelo = :modelo, marca = :marca, numero_serie = :numero_serie, 
-            localizacao = :localizacao, status = :status, contagem_paginas = :contagem_paginas 
-            WHERE id = :id";
-    
-    $stmt = $conn->prepare($sql);
-    
-    try {
-        $stmt->execute([
-            ':modelo' => $_POST['modelo'],
-            ':marca' => $_POST['marca'],
-            ':numero_serie' => $_POST['numero_serie'],
-            ':localizacao' => $_POST['localizacao'],
-            ':status' => $_POST['status'],
-            ':contagem_paginas' => $_POST['contagem_paginas'],
-            ':id' => $id
-        ]);
-        header('Location: detalhes.php?id=' . $id);
-        exit;
-    } catch(PDOException $e) {
-        $erro = "Erro ao atualizar: " . $e->getMessage();
-    }
-}
-
-include 'includes/header.php';
 ?>
 
 <?php if(isset($erro)): ?>

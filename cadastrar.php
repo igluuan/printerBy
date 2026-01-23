@@ -1,52 +1,69 @@
 <?php
-session_start();
-require_once 'config/database.php';
-require_once 'config/timezone.php';
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $db = new Database();
-    $conn = $db->connect();
+try {
+    session_start();
+    require_once 'config/database.php';
+    require_once 'config/timezone.php';
+
+    $erro = null;
     
-    // Sanitizar e validar todos os campos
-    $modelo = trim($_POST['modelo'] ?? '');
-    $marca = trim($_POST['marca'] ?? '');
-    $numero_serie = trim($_POST['numero_serie'] ?? '');
-    $localizacao = trim($_POST['localizacao'] ?? '');
-    $status = trim($_POST['status'] ?? 'equipamento_completo');
-    $contagem_paginas = isset($_POST['contagem_paginas']) ? (int)$_POST['contagem_paginas'] : 0;
-      
-    $sql = "INSERT INTO impressoras (modelo, marca, numero_serie, localizacao, status, contagem_paginas) 
-            VALUES (:modelo, :marca, :numero_serie, :localizacao, :status, :contagem_paginas)";
-    
-    $stmt = $conn->prepare($sql);
-    
-    try {
-        $result = $stmt->execute([
-            ':modelo' => $modelo,
-            ':marca' => $marca,
-            ':numero_serie' => $numero_serie,
-            ':localizacao' => $localizacao,
-            ':status' => $status,
-            ':contagem_paginas' => $contagem_paginas
-        ]);
-        
-        if ($result) {
-            $_SESSION['debug_logs'] = $logs;
-            header('Location: index.php');
-            exit;
-        } else {
-            $erro = "Erro: Falha ao inserir dados no banco.";
-            $logs[] = "Falha ao inserir: Nenhuma exceção mas execute retornou false";
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        try {
+            $conn = Database::getInstance();
+            
+            // Sanitizar e validar todos os campos
+            $modelo = trim($_POST['modelo'] ?? '');
+            $marca = trim($_POST['marca'] ?? '');
+            $numero_serie = trim($_POST['numero_serie'] ?? '');
+            $localizacao = trim($_POST['localizacao'] ?? '');
+            $status = trim($_POST['status'] ?? 'equipamento_completo');
+            $contagem_paginas = isset($_POST['contagem_paginas']) ? (int)$_POST['contagem_paginas'] : 0;
+              
+            $sql = "INSERT INTO impressoras (modelo, marca, numero_serie, localizacao, status, contagem_paginas) 
+                    VALUES (:modelo, :marca, :numero_serie, :localizacao, :status, :contagem_paginas)";
+            
+            $stmt = $conn->prepare($sql);
+            
+            $result = $stmt->execute([
+                ':modelo' => $modelo,
+                ':marca' => $marca,
+                ':numero_serie' => $numero_serie,
+                ':localizacao' => $localizacao,
+                ':status' => $status,
+                ':contagem_paginas' => $contagem_paginas
+            ]);
+            
+            if ($result) {
+                ob_end_clean();
+                header('Location: index.php');
+                exit;
+            } else {
+                $erro = "Erro: Falha ao inserir dados no banco.";
+            }
+        } catch(Exception $e) {
+            $erro = "Erro ao cadastrar: " . $e->getMessage();
         }
-    } catch(PDOException $e) {
-        $erro = "Erro ao cadastrar: " . $e->getMessage();
     }
     
-    // Guardar logs na sessão para exibir
-    $_SESSION['debug_logs'] = $logs;
+    ob_end_clean();
+    include 'includes/header.php';
+    
+} catch(Exception $e) {
+    ob_end_clean();
+    header('Content-Type: text/html; charset=utf-8');
+    http_response_code(500);
+    ?>
+    <!DOCTYPE html>
+    <html><head><title>Erro</title></head><body>
+    <h1>Erro 500</h1>
+    <p><?= htmlspecialchars($e->getMessage()) ?></p>
+    </body></html>
+    <?php
+    exit;
 }
-
-include 'includes/header.php';
 ?>
 
 <?php if(isset($erro)): ?>

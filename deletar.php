@@ -1,36 +1,57 @@
 <?php
-require_once 'config/database.php';
-require_once 'config/timezone.php';
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
-$db = new Database();
-$conn = $db->connect();
+try {
+    require_once 'config/database.php';
+    require_once 'config/timezone.php';
 
-$id = $_GET['id'] ?? 0;
+    $conn = Database::getInstance();
 
-// Buscar impressora para confirmar existência
-$stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
-$stmt->execute([':id' => $id]);
-$impressora = $stmt->fetch();
+    $id = $_GET['id'] ?? 0;
 
-if (!$impressora) {
-    header('Location: index.php');
+    // Buscar impressora para confirmar existência
+    $stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
+    $stmt->execute([':id' => $id]);
+    $impressora = $stmt->fetch();
+
+    if (!$impressora) {
+        ob_end_clean();
+        header('Location: index.php');
+        exit;
+    }
+
+    // Deletar impressora (CASCADE já apaga as peças relacionadas)
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        try {
+            $sql = "DELETE FROM impressoras WHERE id = :id";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            ob_end_clean();
+            header('Location: index.php?msg=Impressora deletada com sucesso');
+            exit;
+        } catch(Exception $e) {
+            $erro = "Erro ao deletar: " . $e->getMessage();
+        }
+    }
+
+    ob_end_clean();
+    include 'includes/header.php';
+    
+} catch(Exception $e) {
+    ob_end_clean();
+    header('Content-Type: text/html; charset=utf-8');
+    http_response_code(500);
+    ?>
+    <!DOCTYPE html>
+    <html><head><title>Erro</title></head><body>
+    <h1>Erro 500</h1>
+    <p><?= htmlspecialchars($e->getMessage()) ?></p>
+    </body></html>
+    <?php
     exit;
 }
-
-// Deletar impressora (CASCADE já apaga as peças relacionadas)
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    try {
-        $sql = "DELETE FROM impressoras WHERE id = :id";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([':id' => $id]);
-        header('Location: index.php?msg=Impressora deletada com sucesso');
-        exit;
-    } catch(PDOException $e) {
-        $erro = "Erro ao deletar: " . $e->getMessage();
-    }
-}
-
-include 'includes/header.php';
 ?>
 
 <div class="card border-danger">
