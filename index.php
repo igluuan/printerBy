@@ -1,59 +1,78 @@
 <?php
+session_start();
 require_once 'config/database.php';
 require_once 'config/timezone.php';
 include 'includes/header.php';
 
-$conn = Database::getInstance();
+try {
+    $conn = Database::getInstance();
 
-// Capturar filtros
-$busca = $_GET['busca'] ?? '';
-$marca = $_GET['marca'] ?? '';
-$status = $_GET['status'] ?? '';
-$pagina = max(1, (int)($_GET['page'] ?? 1));
-$por_pagina = 25;
-$offset = ($pagina - 1) * $por_pagina;
+    // Capturar filtros
+    $busca = $_GET['busca'] ?? '';
+    $marca = $_GET['marca'] ?? '';
+    $status = $_GET['status'] ?? '';
+    $pagina = max(1, (int)($_GET['page'] ?? 1));
+    $por_pagina = 25;
+    $offset = ($pagina - 1) * $por_pagina;
 
-// Montar query dinâmica (sem LIMIT para contagem)
-$sql_base = "FROM impressoras WHERE 1=1";
-$params = [];
+    // Montar query dinâmica (sem LIMIT para contagem)
+    $sql_base = "FROM impressoras WHERE 1=1";
+    $params = [];
 
-if ($busca) {
-    $sql_base .= " AND (modelo LIKE :busca OR numero_serie LIKE :busca OR localizacao LIKE :busca)";
-    $params[':busca'] = "%$busca%";
+    if ($busca) {
+        $sql_base .= " AND (modelo LIKE :busca OR numero_serie LIKE :busca OR localizacao LIKE :busca)";
+        $params[':busca'] = "%$busca%";
+    }
+
+    if ($marca) {
+        $sql_base .= " AND marca = :marca";
+        $params[':marca'] = $marca;
+    }
+
+    if ($status) {
+        $sql_base .= " AND status = :status";
+        $params[':status'] = $status;
+    }
+
+    // Contar total de registros
+    $stmt_count = $conn->prepare("SELECT COUNT(*) as total " . $sql_base);
+    $stmt_count->execute($params);
+    $result = $stmt_count->fetch();
+    $total_registros = $result['total'] ?? 0;
+    $total_paginas = max(1, ceil($total_registros / $por_pagina));
+
+    // Buscar impressoras com paginação
+    $sql = "SELECT * " . $sql_base . " ORDER BY data_cadastro DESC LIMIT :limit OFFSET :offset";
+    $params[':limit'] = $por_pagina;
+    $params[':offset'] = $offset;
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+    $impressoras = $stmt->fetchAll();
+
+    // Buscar marcas únicas para filtro (com cache simples)
+    if (empty($_SESSION['marcas_cache']) || time() - ($_SESSION['marcas_cache_time'] ?? 0) > 3600) {
+        $marcas_stmt = $conn->query("SELECT DISTINCT marca FROM impressoras WHERE marca IS NOT NULL ORDER BY marca");
+        $_SESSION['marcas_cache'] = $marcas_stmt->fetchAll(PDO::FETCH_COLUMN);
+        $_SESSION['marcas_cache_time'] = time();
+    }
+    $marcas = $_SESSION['marcas_cache'];
+} catch(Exception $e) {
+    error_log('Erro em index.php: ' . $e->getMessage());
+    // Inicializar variáveis com valores vazios para evitar erros
+    $impressoras = [];
+    $marcas = [];
+    $total_registros = 0;
+    $total_paginas = 0;
+    $error_message = 'Erro ao carregar impressoras: ' . htmlspecialchars($e->getMessage());
 }
-
-if ($marca) {
-    $sql_base .= " AND marca = :marca";
-    $params[':marca'] = $marca;
-}
-
-if ($status) {
-    $sql_base .= " AND status = :status";
-    $params[':status'] = $status;
-}
-
-// Contar total de registros
-$stmt_count = $conn->prepare("SELECT COUNT(*) as total " . $sql_base);
-$stmt_count->execute($params);
-$total_registros = $stmt_count->fetch()['total'];
-$total_paginas = ceil($total_registros / $por_pagina);
-
-// Buscar impressoras com paginação
-$sql = "SELECT * " . $sql_base . " ORDER BY data_cadastro DESC LIMIT :limit OFFSET :offset";
-$params[':limit'] = $por_pagina;
-$params[':offset'] = $offset;
-
-$stmt = $conn->prepare($sql);
-$stmt->execute($params);
-$impressoras = $stmt->fetchAll();
-
-// Buscar marcas únicas para filtro (com cache simples)
-if (empty($_SESSION['marcas_cache']) || time() - ($_SESSION['marcas_cache_time'] ?? 0) > 3600) {
-    $_SESSION['marcas_cache'] = $conn->query("SELECT DISTINCT marca FROM impressoras WHERE marca IS NOT NULL ORDER BY marca")->fetchAll(PDO::FETCH_COLUMN);
-    $_SESSION['marcas_cache_time'] = time();
-}
-$marcas = $_SESSION['marcas_cache'];
 ?>
+
+<?php if (isset($error_message)): ?>
+<div class="alert alert-danger mb-4">
+    <strong>❌ Erro:</strong> <?= $error_message ?>
+</div>
+<?php endif; ?>
 
 <!-- FORM DE FILTROS -->
 <div class="card mb-4">
@@ -64,7 +83,7 @@ $marcas = $_SESSION['marcas_cache'];
         <form method="GET" class="filter-container">
             <div>
                 <label class="form-label" style="margin-bottom: 0.35rem;">Buscar</label>
-                <input type="text" name="busca" class="form-control" placeholder="Modelo, série ou localização..." value="<?= htmlspecialchars($busca) ?>">
+                <input type="text" name="busca" class="form-control" placeholder="Modelo, série ou localização..." value="<?= htmlspecialchars($busca ?? '') ?>">
             </div>
             <div>
                 <label class="form-label" style="margin-bottom: 0.35rem;">Marca</label>
@@ -79,9 +98,9 @@ $marcas = $_SESSION['marcas_cache'];
                 <label class="form-label" style="margin-bottom: 0.35rem;">Status</label>
                 <select name="status" class="form-select">
                     <option value="">Todos os status</option>
-                    <option value="equipamento_completo" <?= $status == 'equipamento_completo' ? 'selected' : '' ?>>✓ Equipamento Completo</option>
-                    <option value="equipamento_manutencao" <?= $status == 'equipamento_manutencao' ? 'selected' : '' ?>>⚙️ Equipamento Precisa de Manutenção</option>
-                    <option value="inativo" <?= $status == 'inativo' ? 'selected' : '' ?>>✗ Inativo</option>
+                    <option value="equipamento_completo" <?= ($status ?? '') == 'equipamento_completo' ? 'selected' : '' ?>>✓ Equipamento Completo</option>
+                    <option value="equipamento_manutencao" <?= ($status ?? '') == 'equipamento_manutencao' ? 'selected' : '' ?>>⚙️ Equipamento Precisa de Manutenção</option>
+                    <option value="inativo" <?= ($status ?? '') == 'inativo' ? 'selected' : '' ?>>✗ Inativo</option>
                 </select>
             </div>
             <div class="button-group mt-2">
