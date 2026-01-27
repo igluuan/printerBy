@@ -1,29 +1,69 @@
 <?php
+/**
+ * ╔═══════════════════════════════════════════════════════════════════════════════════╗
+ * ║                      ✏️ EDIÇÃO DE IMPRESSORA                                      ║
+ * ║                                                                                   ║
+ * ║ Arquivo: editar.php                                                               ║
+ * ║ Descrição: Página para atualizar informações de uma impressora existente          ║
+ * ║ Funcionalidades:                                                                  ║
+ * ║   - Buscar impressora pelo ID via parâmetro GET                                   ║
+ * ║   - Pré-popular formulário com dados atuais                                       ║
+ * ║   - Validar e sanitizar alterações via POST                                       ║
+ * ║   - Atualizar registro no banco de dados                                          ║
+ * ║   - Redirecionar para detalhes após sucesso                                       ║
+ * ║   - Verificar existência antes de proceder                                        ║
+ * ║                                                                                   ║
+ * ║ Parâmetros GET: ?id=X (ID da impressora a editar)                                 ║
+ * ║ Método HTTP: POST (para salvar alterações)                                        ║
+ * ║ Autor: Sistema de Gerenciamento                                                   ║
+ * ║ Data: 26/01/2026                                                                  ║
+ * ╚═══════════════════════════════════════════════════════════════════════════════════╝
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════════
+// INICIALIZAÇÃO
+// ═══════════════════════════════════════════════════════════════════════════════════
+
 ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 try {
+    // Carregar configurações
     require_once 'config/database.php';
     require_once 'config/timezone.php';
 
+    // Conectar ao banco
     $conn = Database::getInstance();
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // VALIDAR PARÂMETRO GET E BUSCAR IMPRESSORA
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // Obter ID da impressora a editar (parâmetro GET)
     $id = $_GET['id'] ?? 0;
 
-    // Buscar impressora
+    // Buscar impressora no banco
     $stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
     $stmt->execute([':id' => $id]);
     $impressora = $stmt->fetch();
 
+    // Se não encontrar, redirecionar para listagem
     if (!$impressora) {
         ob_end_clean();
         header('Location: index.php');
         exit;
     }
 
-    // Atualizar impressora
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // PROCESSAR FORMULÁRIO (POST)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // Variável para armazenar erros
+    $erro = null;
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        // Preparar statement UPDATE
         $sql = "UPDATE impressoras SET modelo = :modelo, marca = :marca, numero_serie = :numero_serie, 
                 localizacao = :localizacao, status = :status, contagem_paginas = :contagem_paginas 
                 WHERE id = :id";
@@ -31,6 +71,7 @@ try {
         $stmt = $conn->prepare($sql);
         
         try {
+            // Executar UPDATE com dados sanitizados
             $stmt->execute([
                 ':modelo' => $_POST['modelo'],
                 ':marca' => $_POST['marca'],
@@ -40,18 +81,23 @@ try {
                 ':contagem_paginas' => $_POST['contagem_paginas'],
                 ':id' => $id
             ]);
+            
+            // Redirecionar para página de detalhes após sucesso
             ob_end_clean();
             header('Location: detalhes.php?id=' . $id);
             exit;
         } catch(Exception $e) {
+            // Capturar erro e exibir mensagem
             $erro = "Erro ao atualizar: " . $e->getMessage();
         }
     }
 
+    // Limpar buffer e incluir template
     ob_end_clean();
     include 'includes/header.php';
     
 } catch(Exception $e) {
+    // Erro crítico
     ob_end_clean();
     header('Content-Type: text/html; charset=utf-8');
     http_response_code(500);
@@ -66,9 +112,16 @@ try {
 }
 ?>
 
+<!-- ═══════════════════════════════════════════════════════════════════════════════════
+     EXIBIR MENSAGEM DE ERRO (se houver)
+     ═══════════════════════════════════════════════════════════════════════════════════ -->
 <?php if(isset($erro)): ?>
-    <div class="alert alert-danger"><?= $erro ?></div>
+    <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
 <?php endif; ?>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════
+     FORMULÁRIO DE EDIÇÃO
+     ═══════════════════════════════════════════════════════════════════════════════════ -->
 
 <div class="card">
     <div class="card-header">
@@ -76,6 +129,7 @@ try {
     </div>
     <div class="card-body">
         <form method="POST">
+            <!-- LINHA 1: Modelo e Marca -->
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Modelo *</label>
@@ -96,6 +150,7 @@ try {
                 </div>
             </div>
             
+            <!-- LINHA 2: Número de Série e Localização -->
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Número de Série *</label>
@@ -107,6 +162,7 @@ try {
                 </div>
             </div>
             
+            <!-- LINHA 3: Status e Contagem de Páginas -->
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Status *</label>
@@ -122,6 +178,7 @@ try {
                 </div>
             </div>
             
+            <!-- BOTÕES DE AÇÃO -->
             <div class="button-group">
                 <button type="submit" class="btn btn-success">✓ Salvar</button>
                 <a href="detalhes.php?id=<?= $id ?>" class="btn btn-secondary">Cancelar</a>

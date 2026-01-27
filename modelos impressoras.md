@@ -1,0 +1,42 @@
+OKIDATA(marca)
+- ES4172LP MFP
+- ES5162LP MFP
+- ES5112 PN
+- ES6405N
+- MC780
+- MPS5502MB
+- C831N
+SAMSUNG(marca)
+- ProXpress M4070FR
+- ProXpress SL-M4020ND
+- SCX-5637
+- ML-3710ND
+- SL-C4062FX
+- CLX-6260FR
+- ProXpress M4580FX
+HP(marca)
+- LaserJet Managed E42540
+- LaserJet Managed E50145
+- LaserJet Managed E60165
+- LaserJet Managed E55040
+- Laser 432fdn
+- Laser 408dn
+- LaserJet Managed MFP E57540
+RICOH(marca)
+- SP C352DN
+BROTHER(marca)
+- MFC-L6902DW
+- MFC-L5912DW
+- HL-L6202DW
+- HL-L5212DW
+- MFC-6702DW
+- DCP- L5652DN
+- HL-L6402DW
+- MFC-J6955DW
+KYOCERA(marca)
+- TASKalfa 3551ci
+- ECOSYS MA4000cix
+- ECOSYS PA4000cx
+- ECOSYS P3155dn
+XEROX(marca)
+- VersaLink C400
