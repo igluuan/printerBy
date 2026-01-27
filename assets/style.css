@@ -585,3 +585,131 @@ textarea.form-control {
         font-size: 16px;
     }
 }
+
+/* ======================================== */
+/* DARK MODE                                */
+/* ======================================== */
+
+html.dark-mode {
+    --bs-body-color: #dee2e6; /* Cor do texto principal */
+    --bs-body-bg: #212529; /* Cor de fundo principal */
+    --bs-dark-rgb: 222, 226, 230; /* Para .text-dark no dark mode */
+    color-scheme: dark; /* Informa ao navegador para usar estilos de UI escuros */
+}
+
+html.dark-mode body {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+html.dark-mode .navbar {
+    background-color: #343a40 !important; /* Navbar escura */
+    box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+}
+
+html.dark-mode .navbar-brand {
+    color: var(--bs-body-color) !important;
+}
+
+html.dark-mode .card {
+    background-color: #343a40; /* Card escuro */
+    box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+}
+
+html.dark-mode .card-header {
+    background-color: #454d55; /* Header do card escuro */
+    border-bottom-color: #6c757d !important;
+    color: var(--bs-body-color);
+}
+
+html.dark-mode .card-header h4,
+html.dark-mode .card-header h5 {
+    color: var(--bs-body-color);
+}
+
+html.dark-mode .table-responsive {
+    background: #343a40; /* Fundo da tabela responsiva escuro */
+    box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+}
+
+html.dark-mode .table {
+    color: var(--bs-body-color);
+}
+
+html.dark-mode .table thead th {
+    background-color: #454d55; /* Header da tabela escuro */
+    color: var(--bs-body-color);
+}
+
+html.dark-mode .table tbody tr {
+    border-bottom-color: #454d55;
+}
+
+html.dark-mode .table tbody tr:hover {
+    background-color: #454d55;
+}
+
+html.dark-mode .form-label {
+    color: var(--bs-body-color);
+}
+
+html.dark-mode .form-control,
+html.dark-mode .form-select {
+    background-color: #454d55;
+    color: var(--bs-body-color);
+    border-color: #6c757d;
+}
+
+html.dark-mode .form-control::placeholder {
+    color: #adb5bd;
+}
+
+html.dark-mode .form-control:focus,
+html.dark-mode .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+html.dark-mode .alert-danger {
+    background-color: #6a0000;
+    color: #ffcccc;
+}
+
+html.dark-mode .alert-warning {
+    background-color: #7a6a00;
+    color: #ffeecc;
+}
+
+html.dark-mode .alert-success {
+    background-color: #004a00;
+    color: #ccffcc;
+}
+
+html.dark-mode .alert-info {
+    background-color: #004a6a;
+    color: #cceeff;
+}
+
+html.dark-mode .text-muted {
+    color: #adb5bd !important;
+}
+
+html.dark-mode .bg-light {
+    background-color: #343a40 !important;
+    color: var(--bs-body-color) !important;
+}
+
+html.dark-mode footer {
+    border-top-color: #454d55 !important;
+    color: var(--bs-body-color) !important;
+}
+
+html.dark-mode .btn-dark {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+html.dark-mode .btn-dark:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}

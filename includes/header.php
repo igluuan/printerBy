@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" id="theme-switcher">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
@@ -28,6 +28,9 @@
 <nav class="navbar navbar-dark bg-dark mb-3 mb-md-4">
     <div class="container-fluid px-2 px-sm-3">
         <a href="index.php" class="navbar-brand mb-0 h1">🖨️ Inventário de impressoras</a>
+        <button id="dark-mode-toggle" class="btn btn-dark ms-auto" aria-label="Toggle dark mode">
+            <i class="bi bi-moon-fill"></i>
+        </button>
     </div>
 </nav>
 <main class="container-fluid" style="padding-top: 0;">

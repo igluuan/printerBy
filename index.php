@@ -363,12 +363,12 @@ include 'includes/header.php';
 -->
 <div id="impressoras-container">
     <?php if (count($impressoras) > 0): ?>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-2">
             <?php foreach($impressoras as $imp): ?>
             <div class="col">
-                <div class="card h-100">
+                <div class="card h-95">
                     <div class="card-body d-flex flex-column">
-                        <h6 class="card-title fw-bold"><?= htmlspecialchars($imp['modelo']) ?></h6>
+                        <h7 class="card-title fw-bold"><?= htmlspecialchars($imp['modelo']) ?></h7>
                         <small class="text-muted mb-2"><?= htmlspecialchars($imp['marca']) ?></small>
                         
                         <div class="mt-auto">
