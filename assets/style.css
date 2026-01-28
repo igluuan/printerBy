@@ -670,6 +670,12 @@ html.dark-mode .form-select:focus {
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
+html.dark-mode .input-group-text {
+    background-color: #454d55; /* Darker background, similar to form-control */
+    color: var(--bs-body-color); /* Inherit text color from dark mode body */
+    border-color: #6c757d; /* Darker border, similar to form-control */
+}
+
 html.dark-mode .alert-danger {
     background-color: #6a0000;
     color: #ffcccc;

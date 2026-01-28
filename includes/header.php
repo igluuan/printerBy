@@ -8,8 +8,8 @@
     <title>Inventário de Impressoras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="assets/style.css">
+    <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/style.css">
     <style>
         /* Otimizações adicionais para touch/mobile */
         @media (max-width: 576px) {
@@ -34,4 +34,3 @@
     </div>
 </nav>
 <main class="container-fluid" style="padding-top: 0;">
-

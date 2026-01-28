@@ -1,21 +1,30 @@
-<?php
+<!--
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════════════╗
- * ║                      ➕ CADASTRO DE NOVA IMPRESSORA                              ║
+ * ║                 🖨️ PÁGINA PRINCIPAL - GERENCIAMENTO DE FROTA                      ║
  * ╚═══════════════════════════════════════════════════════════════════════════════════╝
- * @version 2.1.0
- * @since 2026-01-26
  *
- * REVISÃO DE FUNCIONALIDADES (v2.1.0):
- * - Carrega marcas e modelos do arquivo 'modelos impressoras.md'.
- * - Dropdowns de Marca e Modelo são dinâmicos e dependentes.
- * - A seleção de uma Marca popula o dropdown de Modelos via JavaScript.
+ * @version 2.0.0
+ * @since 2026-01-26
+ * @author Gemini
+ *
+ * REVISÃO DE FUNCIONALIDADES (v2.0.0):
+ * - Implementado painel de filtros avançado (Enterprise UX).
+ * - Barra de "pílulas" (lozenges) para visualização e remoção de filtros ativos.
+ * - Sidebar (Off-canvas) com seções colapsáveis para categorias de filtro.
+ * - Filtro de Status com múltipla seleção (checkboxes).
+ * - Filtro de Marca com múltipla seleção e busca interna.
+ * - Filtro de Data de Cadastro com presets (Hoje, 7 dias, etc.).
+ * - Lógica de ordenação dinâmica.
+ * - Feedback visual de contagem de resultados.
+ * - Código PHP refatorado para suportar filtros complexos (arrays, ranges).
+ * - Código JavaScript para dinâmica da interface de filtros.
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════════
-// INICIALIZAÇÃO
+// INICIALIZAÇÃO E CONFIGURAÇÃO
 // ═══════════════════════════════════════════════════════════════════════════════════
-
+<?php
 ob_start();
 session_start();
 
@@ -28,51 +37,30 @@ require_once 'config/timezone.php';
 
 $erro = null;
 
-// ═══════════════════════════════════════════════════════════════════════════════════
-// CARREGAR E PARSEAR MODELOS DE IMPRESSORAS
-// ═══════════════════════════════════════════════════════════════════════════════════
-
 $marcas_modelos = [];
 try {
-    $modelos_file_path = 'modelos impressoras.md';
-    if (file_exists($modelos_file_path)) {
-        $modelos_raw = file_get_contents($modelos_file_path);
-        $lines = explode("\n", $modelos_raw);
-        $current_marca = '';
+    $conn = Database::getInstance();
 
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (empty($line)) continue;
+    // Fetch brands from the 'marcas' table
+    $stmt_marcas = $conn->query("SELECT nome_marca FROM marcas ORDER BY nome_marca ASC");
+    $marcas_db = $stmt_marcas->fetchAll(PDO::FETCH_COLUMN);
 
-            if (preg_match('/(.+)\(marca\)/', $line, $matches)) {
-                $current_marca = strtoupper(trim($matches[1]));
-                if (!isset($marcas_modelos[$current_marca])) {
-                    $marcas_modelos[$current_marca] = [];
-                }
-            } elseif (strpos($line, '-') === 0 && $current_marca) {
-                $model = trim(substr($line, 1));
-                if (!empty($model)) {
-                    $marcas_modelos[$current_marca][] = $model;
-                }
-            }
-        }
-        ksort($marcas_modelos); // Ordenar marcas alfabeticamente
-    } else {
-        $erro = "Arquivo 'modelos impressoras.md' não encontrado. Usando lista de fallback.";
-        // Fallback para o caso do arquivo não existir
-        $marcas_modelos = [
-            'HP' => [], 'BROTHER' => [], 'SAMSUNG' => [], 'OKIDATA' => [], 
-            'KYOCERA' => [], 'CANON' => [], 'RICOH' => [], 'XEROX' => []
-        ];
+    foreach ($marcas_db as $marca_nome) {
+        $marcas_modelos[strtoupper($marca_nome)] = [];
+        $stmt_modelos = $conn->prepare("SELECT modelo FROM modelos_conhecidos WHERE marca = :marca ORDER BY modelo ASC");
+        $stmt_modelos->execute([':marca' => $marca_nome]);
+        $modelos_db = $stmt_modelos->fetchAll(PDO::FETCH_COLUMN);
+        $marcas_modelos[strtoupper($marca_nome)] = $modelos_db;
     }
+    
 } catch (Exception $e) {
-    $erro = "Erro ao carregar lista de modelos: " . $e->getMessage();
+    $erro = "Erro ao carregar lista de modelos do banco de dados: " . $e->getMessage();
+    // Fallback para o caso de erro no banco, pode ser removido em produção
+    $marcas_modelos = [
+        'HP' => [], 'BROTHER' => [], 'SAMSUNG' => [], 'OKIDATA' => [], 
+        'KYOCERA' => [], 'CANON' => [], 'RICOH' => [], 'XEROX' => []
+    ];
 }
-
-
-// ═══════════════════════════════════════════════════════════════════════════════════
-// PROCESSAR FORMULÁRIO (POST)
-// ═══════════════════════════════════════════════════════════════════════════════════
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
@@ -116,25 +104,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $erro = "Erro ao cadastrar: " . $e->getMessage();
     }
 }
-
-// Incluir o cabeçalho
-include 'includes/header.php';
 ?>
+<!-- Incluir o cabeçalho -->
+<?php include 'includes/header.php'; ?>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════════════
-     EXIBIR MENSAGEM DE ERRO (se houver)
-     ═══════════════════════════════════════════════════════════════════════════════════ -->
 <?php if(isset($erro)): ?>
     <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
 <?php endif; ?>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════════════
-     FORMULÁRIO DE CADASTRO
-     ═══════════════════════════════════════════════════════════════════════════════════ -->
-
 <div class="card">
     <div class="card-header">
-        <h4 style="font-size: clamp(1rem, 2vw, 1.25rem);">➕ Cadastrar Nova Impressora</h4>
+        <h4 style="font-size: clamp(1rem, 2vw, 1.25rem);">Cadastrar Nova Impressora</h4>
     </div>
     <div class="card-body">
         <form method="POST">
@@ -144,8 +124,8 @@ include 'includes/header.php';
                     <label for="marca-select" class="form-label">Marca *</label>
                     <select id="marca-select" name="marca" class="form-select" required>
                         <option value="">Selecione uma marca...</option>
-                        <?php foreach (array_keys($marcas_modelos) as $marca_option):
-                            ?><option value="<?= htmlspecialchars($marca_option) ?>"><?= htmlspecialchars($marca_option) ?></option>
+                        <?php foreach (array_keys($marcas_modelos) as $marca_option): ?>
+                            <option value="<?= htmlspecialchars($marca_option) ?>"><?= htmlspecialchars($marca_option) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -178,9 +158,9 @@ include 'includes/header.php';
                     <label class="form-label">Status *</label>
                     <select name="status" class="form-select" required>
                         <option value="">-- Selecione um status --</option>
-                        <option value="equipamento_completo" selected>✓ Equipamento Completo</option>
-                        <option value="equipamento_manutencao">⚙️ Equipamento Precisa de Manutenção</option>
-                        <option value="inativo">✗ Inativo</option>
+                        <option value="equipamento_completo" selected> Equipamento Completo</option>
+                        <option value="equipamento_manutencao">Equipamento Precisa de Manutenção</option>
+                        <option value="inativo">Inativo</option>
                     </select>
                 </div>
                 <div class="col-md-6">
