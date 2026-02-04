@@ -1,7 +1,3 @@
-/* ======================================== */
-/* ESTILOS GLOBAIS E BASE                   */
-/* ======================================== */
-
 html {
     font-size: 16px;
 }
@@ -13,10 +9,6 @@ body {
     line-height: 1.5;
     color: #333;
 }
-
-/* ======================================== */
-/* NAVBAR / NAVEGAÇÃO                       */
-/* ======================================== */
 
 .navbar {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -38,10 +30,6 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
 }
 
-/* ======================================== */
-/* CONTAINERS E ESPAÇAMENTO                 */
-/* ======================================== */
-
 .container {
     padding: 1rem;
 }
@@ -50,10 +38,6 @@ body {
     padding-left: 1rem;
     padding-right: 1rem;
 }
-
-/* ======================================== */
-/* CARDS                                    */
-/* ======================================== */
 
 .card {
     border: none;
@@ -79,10 +63,6 @@ body {
 .card-body {
     padding: 1.25rem;
 }
-
-/* ======================================== */
-/* TABELAS                                  */
-/* ======================================== */
 
 .table-responsive {
     background: white;
@@ -120,10 +100,6 @@ body {
     vertical-align: middle;
 }
 
-/* ======================================== */
-/* BOTÕES                                   */
-/* ======================================== */
-
 .btn {
     border-radius: 6px;
     padding: 0.5rem 1rem;
@@ -156,7 +132,6 @@ body {
     font-size: 1rem;
 }
 
-/* Button container para mobile */
 .button-group {
     display: flex;
     gap: 0.5rem;
@@ -168,10 +143,6 @@ body {
     min-width: 80px;
 }
 
-/* ======================================== */
-/* BADGES                                   */
-/* ======================================== */
-
 .badge {
     padding: 0.4rem 0.8rem;
     border-radius: 20px;
@@ -179,10 +150,6 @@ body {
     font-weight: 500;
     display: inline-block;
 }
-
-/* ======================================== */
-/* FORMULÁRIOS                              */
-/* ======================================== */
 
 .form-label {
     font-weight: 500;
@@ -216,10 +183,6 @@ textarea.form-control {
     min-height: 100px;
 }
 
-/* ======================================== */
-/* ALERTAS                                  */
-/* ======================================== */
-
 .alert {
     border-radius: 6px;
     border: none;
@@ -247,10 +210,6 @@ textarea.form-control {
     background-color: #d1ecf1;
     color: #0c5460;
 }
-
-/* ======================================== */
-/* UTILITÁRIOS                              */
-/* ======================================== */
 
 .text-muted {
     color: #6c757d;
@@ -301,10 +260,6 @@ textarea.form-control {
 .g-3 {
     gap: 1rem;
 }
-
-/* ======================================== */
-/* MEDIA QUERIES - TABLET (768px)           */
-/* ======================================== */
 
 @media (max-width: 768px) {
     html {
@@ -376,7 +331,6 @@ textarea.form-control {
         font-size: 0.9rem;
     }
 
-    /* Fazer colunas empilharem */
     .col-md-6,
     .col-md-4,
     .col-md-3,
@@ -398,15 +352,10 @@ textarea.form-control {
         flex: 1;
     }
 
-    /* Tabela responsiva com scroll */
     .table-responsive table {
         min-width: 300px;
     }
 }
-
-/* ======================================== */
-/* MEDIA QUERIES - MOBILE PEQUENO (<576px) */
-/* ======================================== */
 
 @media (max-width: 576px) {
     html {
@@ -499,7 +448,6 @@ textarea.form-control {
         font-size: 0.8rem;
     }
 
-    /* Botões em mobile ocupam mais espaço */
     .button-group {
         flex-direction: column;
         gap: 0.5rem;
@@ -521,7 +469,6 @@ textarea.form-control {
         min-width: 50px;
     }
 
-    /* Tabs e filtros em mobile */
     .filter-container {
         display: flex;
         flex-direction: column;
@@ -533,11 +480,6 @@ textarea.form-control {
         width: 100%;
     }
 }
-
-/* ======================================== */
-/* MEDIA QUERIES - MOBILE ULTRA PEQUENO     */
-/* (<480px)                                 */
-/* ======================================== */
 
 @media (max-width: 480px) {
     html {
@@ -586,15 +528,11 @@ textarea.form-control {
     }
 }
 
-/* ======================================== */
-/* DARK MODE                                */
-/* ======================================== */
-
 html.dark-mode {
-    --bs-body-color: #dee2e6; /* Cor do texto principal */
-    --bs-body-bg: #212529; /* Cor de fundo principal */
-    --bs-dark-rgb: 222, 226, 230; /* Para .text-dark no dark mode */
-    color-scheme: dark; /* Informa ao navegador para usar estilos de UI escuros */
+    --bs-body-color: #dee2e6;
+    --bs-body-bg: #212529;
+    --bs-dark-rgb: 222, 226, 230;
+    color-scheme: dark;
 }
 
 html.dark-mode body {
@@ -603,7 +541,7 @@ html.dark-mode body {
 }
 
 html.dark-mode .navbar {
-    background-color: #343a40 !important; /* Navbar escura */
+    background-color: #343a40 !important;
     box-shadow: 0 2px 8px rgba(255,255,255,0.1);
 }
 
@@ -612,12 +550,12 @@ html.dark-mode .navbar-brand {
 }
 
 html.dark-mode .card {
-    background-color: #343a40; /* Card escuro */
+    background-color: #343a40;
     box-shadow: 0 2px 8px rgba(255,255,255,0.1);
 }
 
 html.dark-mode .card-header {
-    background-color: #454d55; /* Header do card escuro */
+    background-color: #454d55;
     border-bottom-color: #6c757d !important;
     color: var(--bs-body-color);
 }
@@ -628,7 +566,7 @@ html.dark-mode .card-header h5 {
 }
 
 html.dark-mode .table-responsive {
-    background: #343a40; /* Fundo da tabela responsiva escuro */
+    background: #343a40;
     box-shadow: 0 2px 4px rgba(255,255,255,0.1);
 }
 
@@ -637,7 +575,7 @@ html.dark-mode .table {
 }
 
 html.dark-mode .table thead th {
-    background-color: #454d55; /* Header da tabela escuro */
+    background-color: #454d55;
     color: var(--bs-body-color);
 }
 
@@ -671,9 +609,9 @@ html.dark-mode .form-select:focus {
 }
 
 html.dark-mode .input-group-text {
-    background-color: #454d55; /* Darker background, similar to form-control */
-    color: var(--bs-body-color); /* Inherit text color from dark mode body */
-    border-color: #6c757d; /* Darker border, similar to form-control */
+    background-color: #454d55;
+    color: var(--bs-body-color);
+    border-color: #6c757d;
 }
 
 html.dark-mode .alert-danger {

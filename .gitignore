@@ -7,8 +7,8 @@ README.md
 migrar-status.php
 MELHORIAS_MOBILE.md
 .env
-<<<<<<< HEAD
 error.log
+start.sh
 =======
 *.log
 .env.example

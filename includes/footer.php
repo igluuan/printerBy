@@ -7,7 +7,7 @@
     </small>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="assets/dark-mode.js"></script>
+<script src="../../public/assets/dark-mode.js"></script>
 <script src="https://kit.fontawesome.com/9eab525171.js" crossorigin="anonymous"></script>
 </body>
 </html>

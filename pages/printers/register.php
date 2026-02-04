@@ -1,29 +1,3 @@
-<!--
-/**
- * ╔═══════════════════════════════════════════════════════════════════════════════════╗
- * ║                 🖨️ PÁGINA PRINCIPAL - GERENCIAMENTO DE FROTA                      ║
- * ╚═══════════════════════════════════════════════════════════════════════════════════╝
- *
- * @version 2.0.0
- * @since 2026-01-26
- * @author Gemini
- *
- * REVISÃO DE FUNCIONALIDADES (v2.0.0):
- * - Implementado painel de filtros avançado (Enterprise UX).
- * - Barra de "pílulas" (lozenges) para visualização e remoção de filtros ativos.
- * - Sidebar (Off-canvas) com seções colapsáveis para categorias de filtro.
- * - Filtro de Status com múltipla seleção (checkboxes).
- * - Filtro de Marca com múltipla seleção e busca interna.
- * - Filtro de Data de Cadastro com presets (Hoje, 7 dias, etc.).
- * - Lógica de ordenação dinâmica.
- * - Feedback visual de contagem de resultados.
- * - Código PHP refatorado para suportar filtros complexos (arrays, ranges).
- * - Código JavaScript para dinâmica da interface de filtros.
- */
-
-// ═══════════════════════════════════════════════════════════════════════════════════
-// INICIALIZAÇÃO E CONFIGURAÇÃO
-// ═══════════════════════════════════════════════════════════════════════════════════
 <?php
 ob_start();
 session_start();
@@ -32,10 +6,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-require_once 'config/database.php';
-require_once 'config/timezone.php';
-
-$erro = null;
+require_once '../../config/database.php';
+require_once '../../config/timezone.php';
 
 $marcas_modelos = [];
 try {
@@ -54,8 +26,9 @@ try {
     }
     
 } catch (Exception $e) {
-    $erro = "Erro ao carregar lista de modelos do banco de dados: " . $e->getMessage();
     // Fallback para o caso de erro no banco, pode ser removido em produção
+    $_SESSION['toast_message'] = "Erro ao carregar lista de modelos: " . $e->getMessage();
+    $_SESSION['toast_type'] = 'danger';
     $marcas_modelos = [
         'HP' => [], 'BROTHER' => [], 'SAMSUNG' => [], 'OKIDATA' => [], 
         'KYOCERA' => [], 'CANON' => [], 'RICOH' => [], 'XEROX' => []
@@ -75,7 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         // Validação básica
         if (empty($modelo) || empty($marca) || empty($numero_serie)) {
-             throw new Exception("Marca, Modelo e Número de Série são obrigatórios.");
+             $_SESSION['toast_message'] = "Marca, Modelo e Número de Série são obrigatórios.";
+             $_SESSION['toast_type'] = 'danger';
+             ob_end_clean();
+             header('Location: register.php');
+             exit;
         }
 
         $sql = "INSERT INTO impressoras (modelo, marca, numero_serie, localizacao, status, contagem_paginas) 
@@ -93,24 +70,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         ]);
         
         if ($result) {
-            $_SESSION['success_message'] = "Impressora cadastrada com sucesso!";
+            $_SESSION['toast_message'] = "Impressora cadastrada com sucesso!";
+            $_SESSION['toast_type'] = 'success';
             ob_end_clean();
-            header('Location: index.php');
+            header('Location: /pages/printers/inventory.php');
             exit;
         } else {
-            $erro = "Erro: Falha ao inserir dados no banco.";
+            $_SESSION['toast_message'] = "Erro: Falha ao inserir dados no banco.";
+            $_SESSION['toast_type'] = 'danger';
+            ob_end_clean();
+            header('Location: register.php');
+            exit;
         }
     } catch(Exception $e) {
-        $erro = "Erro ao cadastrar: " . $e->getMessage();
+        $_SESSION['toast_message'] = "Erro ao cadastrar: " . $e->getMessage();
+        $_SESSION['toast_type'] = 'danger';
+        ob_end_clean();
+        header('Location: register.php');
+        exit;
     }
 }
 ?>
 <!-- Incluir o cabeçalho -->
-<?php include 'includes/header.php'; ?>
-
-<?php if(isset($erro)): ?>
-    <div class="alert alert-danger"><?= htmlspecialchars($erro) ?></div>
-<?php endif; ?>
+<?php include '../../includes/header.php'; ?>
 
 <div class="card">
     <div class="card-header">
@@ -173,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- BOTÕES DE AÇÃO -->
             <div class="button-group">
                 <button type="submit" class="btn btn-success">✓ Cadastrar</button>
-                <a href="index.php" class="btn btn-secondary">Cancelar</a>
+                <a href="../public/index.php" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
@@ -211,4 +193,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../../includes/footer.php'; ?>

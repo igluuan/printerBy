@@ -1,97 +1,65 @@
-<!--
-/**
- * ╔═══════════════════════════════════════════════════════════════════════════════════╗
- * ║                 🖨️ PÁGINA PRINCIPAL - GERENCIAMENTO DE FROTA                      ║
- * ╚═══════════════════════════════════════════════════════════════════════════════════╝
- *
- * @version 2.0.0
- * @since 2026-01-26
- * @author Gemini
- *
- * REVISÃO DE FUNCIONALIDADES (v2.0.0):
- * - Implementado painel de filtros avançado (Enterprise UX).
- * - Barra de "pílulas" (lozenges) para visualização e remoção de filtros ativos.
- * - Sidebar (Off-canvas) com seções colapsáveis para categorias de filtro.
- * - Filtro de Status com múltipla seleção (checkboxes).
- * - Filtro de Marca com múltipla seleção e busca interna.
- * - Filtro de Data de Cadastro com presets (Hoje, 7 dias, etc.).
- * - Lógica de ordenação dinâmica.
- * - Feedback visual de contagem de resultados.
- * - Código PHP refatorado para suportar filtros complexos (arrays, ranges).
- * - Código JavaScript para dinâmica da interface de filtros.
- */
-
-// ═══════════════════════════════════════════════════════════════════════════════════
-// INICIALIZAÇÃO E CONFIGURAÇÃO
-// ═══════════════════════════════════════════════════════════════════════════════════
 <?php
 ob_start();
 session_start();
+
+$hideLogout = false;
+
+if (!isset($_SESSION['logado']) || $_SESSION['logado'] !== true) {
+    // Definir mensagem de toast antes de redirecionar
+    $_SESSION['toast_message'] = 'Você precisa estar logado para acessar esta página.';
+    $_SESSION['toast_type'] = 'danger';
+    header("Location: ../../public/index.php"); // Redireciona para a página de login
+    exit;
+}
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-// Dependências
-require_once 'config/database.php';
-require_once 'config/timezone.php';
+require_once '../../config/database.php';
+require_once '../../config/timezone.php';
 
-// Variáveis de estado
 $impressoras = [];
 $marcas = [];
 $total_registros = 0;
 $total_paginas = 0;
-$error_message = null;
 
 try {
     $conn = Database::getInstance();
 } catch (Exception $e) {
-    $error_message = $e->getMessage();
+    $_SESSION['toast_message'] = 'Erro de conexão com o banco de dados: ' . $e->getMessage();
+    $_SESSION['toast_type'] = 'danger';
+    ob_end_clean();
+    header("Location: ../../public/index.php"); // Redireciona em caso de erro crítico de conexão
+    exit;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════════
-// PROCESSAMENTO DOS FILTROS E BUSCA
-// ═══════════════════════════════════════════════════════════════════════════════════
-?>
-<?php
 if ($conn) {
     try {
-        // ───────────────────────────────────────────────────────────────────────────
-        // CAPTURA E SANITIZAÇÃO DOS PARÂMETROS GET
-        // ───────────────────────────────────────────────────────────────────────────
         $busca = trim($_GET['busca'] ?? '');
         
-        // Filtros que podem ser múltiplos (arrays)
         $status_filter = isset($_GET['status']) && is_array($_GET['status']) ? $_GET['status'] : [];
         $marca_filter = isset($_GET['marca']) && is_array($_GET['marca']) ? $_GET['marca'] : [];
 
-        // Filtros de data
         $data_de = trim($_GET['data_de'] ?? '');
         $data_ate = trim($_GET['data_ate'] ?? '');
 
-        // Ordenação
         $ordenar_por = trim($_GET['ordenar_por'] ?? 'data_cadastro_desc');
 
-        // Paginação
         $pagina = max(1, (int)($_GET['page'] ?? 1));
         $por_pagina = 25;
         $offset = ($pagina - 1) * $por_pagina;
 
-        // ───────────────────────────────────────────────────────────────────────────
-        // CONSTRUÇÃO DA QUERY DINÂMICA
-        // ───────────────────────────────────────────────────────────────────────────
         $sql_base = "FROM impressoras WHERE 1=1";
         $params = [];
-        $filter_tags = []; // Para as pílulas
+        $filter_tags = [];
 
-        // Filtro de busca textual
         if ($busca) {
             $sql_base .= " AND (modelo LIKE :busca OR numero_serie LIKE :busca OR localizacao LIKE :busca)";
             $params[':busca'] = "%$busca%";
             $filter_tags['busca'] = $busca;
         }
 
-        // Filtro de Status (múltiplo)
         if (!empty($status_filter)) {
             $placeholders = [];
             foreach ($status_filter as $i => $status) {
@@ -103,7 +71,6 @@ if ($conn) {
             $sql_base .= " AND status IN (" . implode(',', $placeholders) . ")";
         }
         
-        // Filtro de Marca (múltiplo)
         if (!empty($marca_filter)) {
             $placeholders = [];
             foreach ($marca_filter as $i => $marca) {
@@ -115,7 +82,6 @@ if ($conn) {
             $sql_base .= " AND marca IN (" . implode(',', $placeholders) . ")";
         }
 
-        // Filtro de Data de Cadastro
         if ($data_de && $data_ate) {
             $sql_base .= " AND DATE(data_cadastro) BETWEEN :data_de AND :data_ate";
             $params[':data_de'] = $data_de;
@@ -124,17 +90,11 @@ if ($conn) {
             $filter_tags['data_ate'] = $data_ate;
         }
 
-        // ───────────────────────────────────────────────────────────────────────────
-        // CONTAGEM TOTAL DE REGISTROS (COM FILTROS)
-        // ───────────────────────────────────────────────────────────────────────────
         $stmt_count = $conn->prepare("SELECT COUNT(*) as total " . $sql_base);
         $stmt_count->execute($params);
         $total_registros = ($stmt_count->fetch()['total'] ?? 0);
         $total_paginas = max(1, ceil($total_registros / $por_pagina));
 
-        // ───────────────────────────────────────────────────────────────────────────
-        // ORDENAÇÃO
-        // ───────────────────────────────────────────────────────────────────────────
         $order_map = [
             'data_cadastro_desc' => 'data_cadastro DESC',
             'data_cadastro_asc' => 'data_cadastro ASC',
@@ -146,9 +106,6 @@ if ($conn) {
         $order_sql = $order_map[$ordenar_por] ?? 'data_cadastro DESC';
         $sql_base .= " ORDER BY {$order_sql}";
 
-        // ───────────────────────────────────────────────────────────────────────────
-        // BUSCA PRINCIPAL COM PAGINAÇÃO
-        // ───────────────────────────────────────────────────────────────────────────
         $sql = "SELECT * " . $sql_base . " LIMIT :limit OFFSET :offset";
         $stmt = $conn->prepare($sql);
         
@@ -161,9 +118,6 @@ if ($conn) {
         $stmt->execute();
         $impressoras = $stmt->fetchAll();
         
-        // ───────────────────────────────────────────────────────────────────────────
-        // BUSCAR LISTA DE MARCAS PARA FILTRO
-        // ───────────────────────────────────────────────────────────────────────────
         if (empty($_SESSION['marcas_cache']) || time() - ($_SESSION['marcas_cache_time'] ?? 0) > 3600) {
             $marcas_stmt = $conn->query("SELECT DISTINCT marca FROM impressoras WHERE marca IS NOT NULL AND marca != '' ORDER BY marca ASC");
             $_SESSION['marcas_cache'] = $marcas_stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -171,7 +125,6 @@ if ($conn) {
         }
         $marcas = $_SESSION['marcas_cache'];
         
-        // Status fixos
         $status_list = [
             'equipamento_completo' => '✓ Equipamento Completo',
             'equipamento_manutencao' => '⚙️ Requer Manutenção',
@@ -180,34 +133,23 @@ if ($conn) {
 
     } catch (Exception $e) {
         error_log('Erro em index.php: ' . $e->getMessage());
-        $error_message = 'Erro ao carregar dados: ' . htmlspecialchars($e->getMessage());
+        $_SESSION['toast_message'] = 'Erro ao carregar dados das impressoras: ' . htmlspecialchars($e->getMessage());
+        $_SESSION['toast_type'] = 'danger';
+        ob_end_clean();
+        header("Location: inventory.php"); // Redireciona para a própria página para exibir o toast
+        exit;
     }
 }
 ?>
-<!-- Incluir o cabeçalho -->
-<?php include 'includes/header.php'; ?>
+<?php include '../../includes/header.php'; ?>
 
-<?php if ($error_message): ?>
-<div class="alert alert-danger"><strong>Erro:</strong> <?= $error_message ?></div>
-<?php endif; ?>
-
-<!-- 
-|--------------------------------------------------------------------------
-| BARRA DE FERRAMENTAS PRINCIPAL
-|--------------------------------------------------------------------------
-| Contém o botão de filtro, o dropdown de ordenação e o botão de adicionar.
-|
-|
--->
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     
-    <!-- Botão de Filtro -->
     <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilters" aria-controls="offcanvasFilters">
         <i class="bi bi-funnel-fill me-1"></i> Filtros
     </button>
     
     <div class="d-flex align-items-center gap-2">
-        <!-- Dropdown de Ordenação -->
         <div class="dropdown">
             <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-sort-down"></i> Ordenar
@@ -222,20 +164,12 @@ if ($conn) {
             </ul>
         </div>
         
-        <!-- Botão de Adicionar -->
         <a href="cadastrar.php" class="btn btn-success" style="white-space: nowrap;">
             <i class="bi bi-plus-lg"></i> <span class="d-none d-sm-inline">Adicionar</span>
         </a>
     </div>
 </div>
 
-<!-- 
-|--------------------------------------------------------------------------
-| BARRA DE FILTROS ATIVOS (PÍLULAS)
-|--------------------------------------------------------------------------
-| Renderiza as "pílulas" dos filtros aplicados e o feedback de contagem.
-|
--->
 <div id="filter-pills-bar" class="d-none card card-body bg-light mb-3">
     <div class="d-flex flex-wrap align-items-center gap-2">
         <strong class="me-2">Filtros Ativos:</strong>
@@ -248,14 +182,6 @@ if ($conn) {
     <div id="results-feedback" class="text-muted small"></div>
 </div>
 
-
-<!-- 
-|--------------------------------------------------------------------------
-| SIDEBAR DE FILTROS (OFF-CANVAS)
-|--------------------------------------------------------------------------
-| Contém todos os controles de filtro detalhados em seções colapsáveis.
-|
--->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasFilters" aria-labelledby="offcanvasFiltersLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasFiltersLabel"><i class="bi bi-funnel"></i> Painel de Filtros</h5>
@@ -263,7 +189,6 @@ if ($conn) {
     </div>
     <div class="offcanvas-body">
         <form id="filter-form">
-            <!-- Busca Textual -->
             <div class="mb-3">
                 <label for="filter-busca" class="form-label">Busca Rápida</label>
                 <input type="text" id="filter-busca" name="busca" class="form-control" placeholder="Modelo, série, local..." value="<?= htmlspecialchars($busca) ?>">
@@ -271,7 +196,6 @@ if ($conn) {
 
             <div class="accordion" id="filter-accordion">
                 
-                <!-- Seção de Status -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="heading-status">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-status" aria-expanded="false" aria-controls="collapse-status">
@@ -290,7 +214,6 @@ if ($conn) {
                     </div>
                 </div>
 
-                <!-- Seção de Marca -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="heading-marca">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-marca" aria-expanded="false" aria-controls="collapse-marca">
@@ -312,7 +235,6 @@ if ($conn) {
                     </div>
                 </div>
 
-                <!-- Seção de Data -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="heading-data">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-data" aria-expanded="false" aria-controls="collapse-data">
@@ -338,7 +260,7 @@ if ($conn) {
                     </div>
                 </div>
 
-            </div> <!-- /accordion -->
+            </div>
         </form>
     </div>
     <div class="offcanvas-footer p-3 border-top bg-light">
@@ -349,13 +271,6 @@ if ($conn) {
     </div>
 </div>
 
-<!-- 
-|--------------------------------------------------------------------------
-| LISTAGEM DE IMPRESSORAS (CARDS)
-|--------------------------------------------------------------------------
-| Loop principal que exibe os cards ou a mensagem de "nenhum resultado".
-|
--->
 <div id="impressoras-container">
     <?php if (count($impressoras) > 0): ?>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-2">
@@ -396,27 +311,18 @@ if ($conn) {
     <?php else: ?>
         <div class="text-center py-5">
             <h3 class="text-muted">Nenhuma impressora encontrada</h3>
-            <p>Tente ajustar seus filtros ou <a href="index.php">limpar a busca</a>.</p>
+            <p>Tente ajustar seus filtros ou <a href="inventory.php">limpar a busca</a>.</p>
         </div>
     <?php endif; ?>
 </div>
 
-<!-- 
-|--------------------------------------------------------------------------
-| PAGINAÇÃO
-|--------------------------------------------------------------------------
-| Navegação entre as páginas de resultados.
-|
--->
 <?php if ($total_paginas > 1): ?>
 <nav class="mt-4">
     <ul class="pagination justify-content-center">
-        <!-- Botão Anterior -->
         <li class="page-item <?= ($pagina <= 1) ? 'disabled' : '' ?>">
             <a class="page-link" href="#" data-page="<?= $pagina - 1 ?>">Anterior</a>
         </li>
 
-        <!-- Links de Página -->
         <?php 
         $inicio = max(1, $pagina - 2);
         $fim = min($total_paginas, $pagina + 2);
@@ -433,7 +339,6 @@ if ($conn) {
         }
         ?>
         
-        <!-- Botão Próximo -->
         <li class="page-item <?= ($pagina >= $total_paginas) ? 'disabled' : '' ?>">
             <a class="page-link" href="#" data-page="<?= $pagina + 1 ?>">Próximo</a>
         </li>
@@ -441,11 +346,6 @@ if ($conn) {
 </nav>
 <?php endif; ?>
 
-<!--
-╔═══════════════════════════════════════════════════════════════════════════════════╗
-║                      INÍCIO DO SCRIPT DE CLIENT-SIDE (JS)                         ║
-╚═══════════════════════════════════════════════════════════════════════════════════╝
--->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const filterForm = document.getElementById('filter-form');
@@ -453,7 +353,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const pillsBar = document.getElementById('filter-pills-bar');
     const resultsFeedback = document.getElementById('results-feedback');
     
-    // Mapeamento de nomes para as pílulas
     const filterNames = {
         busca: 'Busca',
         status: 'Status',
@@ -464,36 +363,26 @@ document.addEventListener('DOMContentLoaded', function () {
     
     const statusLabels = <?= json_encode($status_list) ?>;
 
-    /**
-     * Atualiza a URL com os parâmetros de filtro e recarrega a página.
-     */
     function applyFilters() {
         const formData = new FormData(filterForm);
         const params = new URLSearchParams();
 
-        // Agrupa checkboxes
         const status = formData.getAll('status[]');
         if (status.length > 0) status.forEach(s => params.append('status[]', s));
         
         const marca = formData.getAll('marca[]');
         if (marca.length > 0) marca.forEach(m => params.append('marca[]', m));
 
-        // Campos de texto e data
         if (formData.get('busca')) params.set('busca', formData.get('busca'));
         if (formData.get('data_de')) params.set('data_de', formData.get('data_de'));
         if (formData.get('data_ate')) params.set('data_ate', formData.get('data_ate'));
         
-        // Mantém ordenação e página
         const currentParams = new URLSearchParams(window.location.search);
         if (currentParams.get('ordenar_por')) params.set('ordenar_por', currentParams.get('ordenar_por'));
-        // Não manter a página, sempre voltar para a primeira ao aplicar novos filtros
         
         window.location.search = params.toString();
     }
     
-    /**
-     * Renderiza as pílulas com base nos parâmetros da URL.
-     */
     function renderPills() {
         const params = new URLSearchParams(window.location.search);
         pillsContainer.innerHTML = '';
@@ -527,9 +416,6 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsFeedback.textContent = `Mostrando <?= count($impressoras) ?> de <?= $total_registros ?> impressoras encontradas.`;
     }
 
-    /**
-     * Inicializa os controles do formulário com base nos parâmetros da URL.
-     */
     function initializeForm() {
         const params = new URLSearchParams(window.location.search);
         
@@ -547,7 +433,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (el) el.checked = true;
         });
 
-        // Atualiza o texto do botão de ordenação
         const sortKey = params.get('ordenar_por') || 'data_cadastro_desc';
         const sortOption = document.querySelector(`.dropdown-item[data-sort="${sortKey}"]`);
         if (sortOption) {
@@ -555,33 +440,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // EVENT LISTENERS
-    // -----------------------------------------------------------------------
-
-    // Botão de Aplicar Filtros na sidebar
     document.getElementById('apply-filters').addEventListener('click', applyFilters);
     
-    // Limpar tudo (botão na barra de pílulas)
     document.getElementById('clear-all-filters').addEventListener('click', (e) => {
         e.preventDefault();
         const currentParams = new URLSearchParams(window.location.search);
         const newParams = new URLSearchParams();
-        // Manter a ordenação, se existir
         if (currentParams.has('ordenar_por')) {
             newParams.set('ordenar_por', currentParams.get('ordenar_por'));
         }
         window.location.search = newParams.toString();
     });
 
-    // Resetar filtros na sidebar
     document.getElementById('reset-sidebar-filters').addEventListener('click', () => {
         filterForm.reset();
         const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasFilters'));
         offcanvas.hide();
     });
     
-    // Remover pílula individual
     pillsContainer.addEventListener('click', function(e) {
         if (e.target.matches('.btn-close')) {
             const key = e.target.dataset.key;
@@ -594,7 +470,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 params.delete(key);
                 allValues.filter(v => v !== value).forEach(v => params.append(key, v));
             } else if (key === 'data_de' || key === 'data_ate') {
-                // Remover ambas as datas se uma for removida
                 params.delete('data_de');
                 params.delete('data_ate');
             } else {
@@ -604,7 +479,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Busca interna no filtro de Marcas
     document.getElementById('marca-search').addEventListener('input', function(e) {
         const searchTerm = e.target.value.toLowerCase();
         document.querySelectorAll('#marca-list .form-check').forEach(item => {
@@ -613,7 +487,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Presets de data
     document.querySelectorAll('[data-preset]').forEach(button => {
         button.addEventListener('click', function() {
             const preset = this.dataset.preset;
@@ -639,7 +512,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Links de ordenação
     document.querySelectorAll('.dropdown-item[data-sort]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -650,7 +522,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Links de paginação
     document.querySelectorAll('.pagination .page-link').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -662,12 +533,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // -----------------------------------------------------------------------
-    // INICIALIZAÇÃO
-    // -----------------------------------------------------------------------
     initializeForm();
     renderPills();
 });
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../../includes/footer.php'; ?>
