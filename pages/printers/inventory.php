@@ -126,9 +126,9 @@ if ($conn) {
         $marcas = $_SESSION['marcas_cache'];
         
         $status_list = [
-            'equipamento_completo' => '✓ Equipamento Completo',
-            'equipamento_manutencao' => '⚙️ Requer Manutenção',
-            'inativo' => '✗ Inativo'
+            'equipamento_completo' => 'Equipamento Completo',
+            'equipamento_manutencao' => 'Requer Manutenção',
+            'inativo' => 'Inativo'
         ];
 
     } catch (Exception $e) {
@@ -273,44 +273,156 @@ if ($conn) {
 
 <div id="impressoras-container">
     <?php if (count($impressoras) > 0): ?>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-2">
-            <?php foreach($impressoras as $imp): ?>
-            <div class="col">
-                <div class="card h-95">
-                    <div class="card-body d-flex flex-column">
-                        <h7 class="card-title fw-bold"><?= htmlspecialchars($imp['modelo']) ?></h7>
-                        <small class="text-muted mb-2"><?= htmlspecialchars($imp['marca']) ?></small>
-                        
-                        <div class="mt-auto">
-                            <div class="mb-2">
-                                <small class="text-muted d-block">Local</small>
-                                <strong><?= htmlspecialchars($imp['localizacao']) ?></strong>
+        
+        <!-- ===== VERSÃO MOBILE (Cards) - Só aparece em telas pequenas ===== -->
+        <div class="d-md-none">
+            <div class="row g-2">
+                <?php foreach($impressoras as $imp): ?>
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="fw-bold mb-0"><?= htmlspecialchars($imp['modelo']) ?></h6>
+                                    <small class="text-muted"><?= htmlspecialchars($imp['marca']) ?></small>
+                                </div>
+                                <span class="badge bg-<?= $imp['status'] == 'equipamento_completo' ? 'success' : ($imp['status'] == 'equipamento_manutencao' ? 'warning' : 'secondary') ?>">
+                                    <?= $status_list[$imp['status']] ?? 'Desconhecido' ?>
+                                </span>
                             </div>
-                             <div class="mb-2">
-                                <small class="text-muted d-block">Nº de Série</small>
-                                <strong><?= htmlspecialchars($imp['numero_serie']) ?></strong>
+                            
+                            <div class="small mb-2">
+                                <div class="mb-1">
+                                    <i class="bi bi-geo-alt text-muted"></i> 
+                                    <strong><?= htmlspecialchars($imp['localizacao']) ?></strong>
+                                </div>
+                                <div class="mb-1">
+                                    <i class="bi bi-upc text-muted"></i> 
+                                    <?= htmlspecialchars($imp['numero_serie']) ?>
+                                </div>
+                                <div>
+                                    <i class="bi bi-file-text text-muted"></i> 
+                                    <?= number_format($imp['contagem_paginas'], 0, ',', '.') ?> páginas
+                                </div>
                             </div>
-                            <div class="mb-2">
-                                <small class="text-muted d-block">Páginas</small>
-                                <strong><?= number_format($imp['contagem_paginas'], 0, ',', '.') ?></strong>
-                            </div>
-                            <div class="badge bg-<?= $imp['status'] == 'equipamento_completo' ? 'success' : ($imp['status'] == 'equipamento_manutencao' ? 'warning' : 'secondary') ?>">
-                                <?= $status_list[$imp['status']] ?? 'Desconhecido' ?>
-                            </div>
+                            
+                            <a href="detalhes.php?id=<?= $imp['id'] ?>" class="btn btn-sm btn-primary w-100">
+                                <i class="bi bi-eye"></i> Ver Detalhes
+                            </a>
                         </div>
                     </div>
-                    <div class="card-footer text-center">
-                        <a href="detalhes.php?id=<?= $imp['id'] ?>" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-eye"></i> Detalhes
-                        </a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            
+            <div class="alert alert-info mt-3 small">
+                <i class="bi bi-info-circle"></i>
+                Total: <strong><?= count($impressoras) ?></strong> equipamentos
+            </div>
+        </div>
+        
+        <!-- ===== VERSÃO DESKTOP (Tabela) - Só aparece em telas médias ou maiores ===== -->
+        <div class="d-none d-md-block">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> Lista de Equipamentos
+                    </h5>
+                    <span class="badge bg-light text-dark">
+                        <?= count($impressoras) ?> <?= count($impressoras) == 1 ? 'equipamento' : 'equipamentos' ?>
+                    </span>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0 align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="60" class="text-center">#</th>
+                                    <th>Modelo</th>
+                                    <th width="120">Marca</th>
+                                    <th>Nº Série</th>
+                                    <th>Localização</th>
+                                    <th width="110" class="text-end">Páginas</th>
+                                    <th width="150" class="text-center">Status</th>
+                                    <th width="120" class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($impressoras as $imp): ?>
+                                <tr>
+                                    <td class="text-center text-muted">
+                                        <strong><?= $imp['id'] ?></strong>
+                                    </td>
+                                    
+                                    <td>
+                                        <strong><?= htmlspecialchars($imp['modelo']) ?></strong>
+                                    </td>
+                                    
+                                    <td>
+                                        <?= htmlspecialchars($imp['marca']) ?>
+                                    </td>
+                                    
+                                    <td>
+                                        <small class="text-muted font-monospace">
+                                            <?= htmlspecialchars($imp['numero_serie']) ?>
+                                        </small>
+                                    </td>
+                                    
+                                    <td>
+                                        <i class="bi bi-geo-alt text-muted"></i>
+                                        <?= htmlspecialchars($imp['localizacao']) ?>
+                                    </td>
+                                    
+                                    <td class="text-end">
+                                        <strong><?= number_format($imp['contagem_paginas'], 0, ',', '.') ?></strong>
+                                    </td>
+                                    
+                                    <td class="text-center">
+                                        <?php
+                                        $badge_class = match($imp['status']) {
+                                            'equipamento_completo' => 'success',
+                                            'equipamento_manutencao' => 'warning',
+                                            default => 'secondary'
+                                        };
+                                        ?>
+                                        <span class="badge bg-<?= $badge_class ?>">
+                                            <?= $status_list[$imp['status']] ?? 'Desconhecido' ?>
+                                        </span>
+                                    </td>
+                                    
+                                    <td class="text-center">
+                                        <a href="detalhes.php?id=<?= $imp['id'] ?>" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> Detalhes
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+                
+                <div class="card-footer text-muted d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="bi bi-info-circle"></i>
+                        Mostrando <strong><?= count($impressoras) ?></strong> 
+                        <?= count($impressoras) == 1 ? 'equipamento' : 'equipamentos' ?>
+                    </span>
+                    
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Imprimir
+                    </button>
+                </div>
             </div>
-            <?php endforeach; ?>
         </div>
+        
     <?php else: ?>
+        <!-- Mensagem quando não há dados -->
         <div class="text-center py-5">
-            <h3 class="text-muted">Nenhuma impressora encontrada</h3>
+            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+            <h3 class="text-muted mt-3">Nenhuma impressora encontrada</h3>
             <p>Tente ajustar seus filtros ou <a href="inventory.php">limpar a busca</a>.</p>
         </div>
     <?php endif; ?>

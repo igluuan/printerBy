@@ -56,9 +56,6 @@
 <nav class="navbar navbar-dark bg-dark mb-3 mb-md-4">
     <div class="container-fluid px-2 px-sm-3">
         <a href="../pages/dashboard.php" class="navbar-brand mb-0 h1">🖨️ Inventário de impressoras</a>
-        <?php if (!empty($_SESSION['logado'])): ?>
-        <p class="ms-2 mt-3">Bem-vindo, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</p>
-        <?php endif; ?>
         <button id="dark-mode-toggle" class="btn btn-dark ms-auto" aria-label="Toggle dark mode">
             <i class="bi bi-moon-fill"></i>
         </button>
