@@ -3,6 +3,8 @@ ob_start();
 session_start();
 
 $hideLogout = false;
+$isDashboardPage = false;
+
 
 if (!isset($_SESSION['logado']) || $_SESSION['logado'] !== true) {
     // Definir mensagem de toast antes de redirecionar

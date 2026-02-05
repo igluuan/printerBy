@@ -54,16 +54,32 @@
     ?>
 </div>
 <nav class="navbar navbar-dark bg-dark mb-3 mb-md-4">
-    <div class="container-fluid px-2 px-sm-3">
-        <a href="../pages/dashboard.php" class="navbar-brand mb-0 h1">🖨️ Inventário de impressoras</a>
-        <button id="dark-mode-toggle" class="btn btn-dark ms-auto" aria-label="Toggle dark mode">
-            <i class="bi bi-moon-fill"></i>
-        </button>
-        <?php if (isset($_SESSION['user_name']) && empty($hideLogout)): ?>
-            <button class="btn btn-primary ms-2">
-                <a href="../auth/processaLogout.php" class="text-white text-decoration-none">Sair <i class="bi bi-box-arrow-right"></i></a>
+    <div class="container-fluid px-2 px-sm-3 d-flex align-items-center">
+        
+        <!-- Título à esquerda -->
+        <a href="/pages/printers/inventory.php" class="navbar-brand mb-0 h1 me-auto">🖨️ Inventário de impressoras</a>
+
+        <!-- Grupo de botões à direita -->
+        <div class="d-flex align-items-center ms-auto">
+            <!-- Botão Dashboard -->
+            <?php if (!isset($isDashboardPage) || !$isDashboardPage): ?>
+            <a href="/pages/printers/dashboard.php" class="btn btn-primary me-2 text-white text-decoration-none">
+                Volte ao Dashboard
+            </a>
+            <?php endif; ?>
+            <!-- Botão Dark Mode -->
+            <button id="dark-mode-toggle" class="btn btn-dark me-2" aria-label="Toggle dark mode">
+                <i class="bi bi-moon-fill"></i>
             </button>
-        <?php endif; ?>
+
+            <!-- Botão Sair (se logado) -->
+            <?php if (isset($_SESSION['user_name']) && empty($hideLogout)): ?>
+                <a href="../auth/processaLogout.php" class="btn btn-primary text-white text-decoration-none">
+                    Sair <i class="bi bi-box-arrow-right"></i>
+                </a>
+            <?php endif; ?>
+        </div>
+
     </div>
 </nav>
 <main class="container-fluid" style="padding-top: 0;">
