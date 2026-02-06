@@ -2,6 +2,10 @@
 session_start(); // Start session at the very beginning
 
 $hideLogout = true;
+$showSidebar = false;
+
+$isDashboardPage = false;
+
 
 include '../includes/header.php';
 ?>
@@ -41,8 +45,6 @@ include '../includes/header.php';
                     <button type="submit" class="btn btn-primary">Login</button>
                     <div>
                         <a href="remember-password.php" class="text-decoration-none">Esqueceu a senha?</a>
-                        <span class="mx-2">|</span>
-                        <a href="../pages/users/register.php" class="text-decoration-none">Cadastrar-se</a>
                     </div>
                 </div>
             </form>

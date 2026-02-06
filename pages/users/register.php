@@ -1,4 +1,13 @@
 <?php
+session_start();
+// Verifica se o usuário está logado e se é admin
+if (!isset($_SESSION['logado']) || $_SESSION['logado'] !== true || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
+    $_SESSION['toast_message'] = 'Acesso negado. Apenas administradores podem cadastrar novos usuários.';
+    $_SESSION['toast_type'] = 'danger';
+    header("Location: /pages/printers/dashboard.php");
+    exit;
+}
+
 $pageTitle = "Cadastrar Usuário";
 require_once '../../includes/header.php';
 ?>

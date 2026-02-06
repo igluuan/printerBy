@@ -3,7 +3,7 @@ ob_start();
 session_start();
 
 $hideLogout = false;
-$isDashboardPage = false;
+$isDashboardPage = true;
 
 
 if (!isset($_SESSION['logado']) || $_SESSION['logado'] !== true) {

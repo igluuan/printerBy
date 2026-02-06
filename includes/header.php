@@ -31,6 +31,16 @@
     </style>
 </head>
 <body>
+<?php
+// Define se o sidebar deve ser exibido (padrão true se logado)
+if (!isset($showSidebar)) {
+    $showSidebar = isset($_SESSION['logado']) && $_SESSION['logado'] === true;
+}
+
+if ($showSidebar) {
+    include __DIR__ . '/sidebar.php';
+}
+?>
 <div class="toast-container">
     <?php
     if (session_status() == PHP_SESSION_NONE) {
@@ -56,7 +66,7 @@
 <nav class="navbar navbar-dark bg-dark mb-3 mb-md-4">
     <div class="container-fluid px-2 px-sm-3 d-flex align-items-center">
         
-        <?php if (isset($isDashboardPage) && $isDashboardPage): ?>
+        <?php if ($showSidebar): ?>
         <button class="btn btn-dark" id="sidebar-toggle" aria-label="Toggle sidebar">
             <i class="bi bi-list"></i>
         </button>
@@ -75,7 +85,7 @@
 
     </div>
 </nav>
-<main class="container-fluid" style="padding-top: 0;">
+<main id="main-content" class="container-fluid" style="padding-top: 0;">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
