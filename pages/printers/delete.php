@@ -4,32 +4,33 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 try {
-    require_once 'config/database.php';
-    require_once 'config/timezone.php';
+    require_once '../database/database.php';
+    require_once '../../config/timezone.php' ;
 
     $conn = Database::getInstance();
 
     $id = $_GET['id'] ?? 0;
 
-    // Buscar impressora para confirmar existência
     $stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
     $stmt->execute([':id' => $id]);
     $impressora = $stmt->fetch();
 
     if (!$impressora) {
         ob_end_clean();
-        header('Location: index.php');
+        header('Location: ../pages/printers/inventory.php');
         exit;
     }
 
-    // Deletar impressora (CASCADE já apaga as peças relacionadas)
+    $erro = null;
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             $sql = "DELETE FROM impressoras WHERE id = :id";
             $stmt = $conn->prepare($sql);
             $stmt->execute([':id' => $id]);
+            
             ob_end_clean();
-            header('Location: index.php?msg=Impressora deletada com sucesso');
+            header('Location: ../pages/printers/inventory.php?msg=Impressora deletada com sucesso');
             exit;
         } catch(Exception $e) {
             $erro = "Erro ao deletar: " . $e->getMessage();
@@ -37,7 +38,7 @@ try {
     }
 
     ob_end_clean();
-    include 'includes/header.php';
+    include '../../includes/header.php';
     
 } catch(Exception $e) {
     ob_end_clean();
@@ -97,4 +98,4 @@ try {
     </div>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../../includes/footer.php'; ?>

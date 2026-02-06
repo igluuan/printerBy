@@ -4,14 +4,13 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 try {
-    require_once 'config/database.php';
-    require_once 'config/timezone.php';
+    require_once '../database/database.php';
+    require_once '../../config/timezone.php' ;
 
     $conn = Database::getInstance();
 
     $id = $_GET['id'] ?? 0;
 
-    // Adicionar peça
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $sql = "INSERT INTO pecas_retiradas (impressora_id, nome_peca, quantidade, data_retirada, observacao) 
                 VALUES (:impressora_id, :nome_peca, :quantidade, :data_retirada, :observacao)";
@@ -30,7 +29,6 @@ try {
         exit;
     }
 
-    // Buscar impressora
     $stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
     $stmt->execute([':id' => $id]);
     $impressora = $stmt->fetch();
@@ -41,13 +39,12 @@ try {
         exit;
     }
 
-    // Buscar peças
     $stmt = $conn->prepare("SELECT * FROM pecas_retiradas WHERE impressora_id = :id ORDER BY data_retirada DESC");
     $stmt->execute([':id' => $id]);
     $pecas = $stmt->fetchAll();
 
     ob_end_clean();
-    include 'includes/header.php';
+    include '../../includes/header.php';
     
 } catch(Exception $e) {
     ob_end_clean();
@@ -103,8 +100,10 @@ try {
                         <span><?= formatarDataHora($impressora['data_cadastro']) ?></span>
                     </div>
                 </div>
+                
                 <div class="button-group" style="margin-top: 1rem;">
                     <a href="editar.php?id=<?= $impressora['id'] ?>" class="btn btn-warning">✏️ Editar</a>
+                    <a href="deletar.php?id=<?= $impressora['id'] ?>" class="btn btn-danger btn-danger flex-grow-1" style="font-size: 0.8rem; padding: 0.3rem 0.4rem;" title="Excluir" onclick="return confirm('Confirma exclusão?')">🗑️ Excluir</a>
                     <a href="index.php" class="btn btn-secondary">←  Voltar</a>
                 </div>
             </div>
@@ -121,19 +120,24 @@ try {
                     <div class="mb-3">
                         <label class="form-label">Nome da Peça *</label>
                         <input type="text" name="nome_peca" class="form-control" placeholder="Ex: Unidade de Fusor" required>
+                        <small class="text-muted">Identificação clara da peça retirada</small>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">Quantidade *</label>
                         <input type="number" name="quantidade" class="form-control" value="1" required>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">Data Retirada *</label>
                         <input type="date" name="data_retirada" class="form-control" value="<?= dataHoje() ?>" required>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">Observação</label>
                         <textarea name="observacao" class="form-control" placeholder="Ex: Peça retirada para reparo" style="min-height: 80px;"></textarea>
                     </div>
+                    
                     <button type="submit" class="btn btn-primary w-100">✓ Adicionar Peça</button>
                 </form>
             </div>
@@ -163,9 +167,11 @@ try {
                             <td><strong><?= htmlspecialchars($peca['nome_peca']) ?></strong></td>
                             <td><span class="badge bg-info"><?= $peca['quantidade'] ?></span></td>
                             <td><small><?= formatarData($peca['data_retirada']) ?></small></td>
-                            <td class="d-none d-md-table-cell"><small class="text-muted" style="display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                <?= htmlspecialchars($peca['observacao']) ?>
-                            </small></td>
+                            <td class="d-none d-md-table-cell">
+                                <small class="text-muted" style="display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <?= htmlspecialchars($peca['observacao']) ?>
+                                </small>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -177,4 +183,4 @@ try {
     </div>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../../includes/footer.php'; ?>

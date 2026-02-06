@@ -1,28 +1,29 @@
 <?php
 ob_start();
+session_start(); // Adicionado session_start()
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 try {
-    require_once 'config/database.php';
-    require_once 'config/timezone.php';
+    require_once '../../config/database.php'; // Caminho corrigido
+    require_once '../../config/timezone.php' ;
 
     $conn = Database::getInstance();
 
     $id = $_GET['id'] ?? 0;
 
-    // Buscar impressora
     $stmt = $conn->prepare("SELECT * FROM impressoras WHERE id = :id");
     $stmt->execute([':id' => $id]);
     $impressora = $stmt->fetch();
 
     if (!$impressora) {
+        $_SESSION['toast_message'] = 'Impressora não encontrada.';
+        $_SESSION['toast_type'] = 'danger';
         ob_end_clean();
-        header('Location: index.php');
+        header('Location: inventory.php'); // Redireciona para inventory.php
         exit;
     }
 
-    // Atualizar impressora
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $sql = "UPDATE impressoras SET modelo = :modelo, marca = :marca, numero_serie = :numero_serie, 
                 localizacao = :localizacao, status = :status, contagem_paginas = :contagem_paginas 
@@ -40,35 +41,31 @@ try {
                 ':contagem_paginas' => $_POST['contagem_paginas'],
                 ':id' => $id
             ]);
+            
+            $_SESSION['toast_message'] = 'Impressora atualizada com sucesso!';
+            $_SESSION['toast_type'] = 'success';
             ob_end_clean();
-            header('Location: detalhes.php?id=' . $id);
+            header('Location: details.php?id=' . $id);
             exit;
         } catch(Exception $e) {
-            $erro = "Erro ao atualizar: " . $e->getMessage();
+            $_SESSION['toast_message'] = "Erro ao atualizar impressora: " . $e->getMessage();
+            $_SESSION['toast_type'] = 'danger';
+            ob_end_clean();
+            header('Location: edit.php?id=' . $id); // Redireciona de volta para a página de edição
+            exit;
         }
     }
 
-    ob_end_clean();
-    include 'includes/header.php';
-    
+    include '../../includes/header.php'; // Incluído aqui para exibir o toast se houver
+
 } catch(Exception $e) {
+    $_SESSION['toast_message'] = "Erro inesperado: " . $e->getMessage();
+    $_SESSION['toast_type'] = 'danger';
     ob_end_clean();
-    header('Content-Type: text/html; charset=utf-8');
-    http_response_code(500);
-    ?>
-    <!DOCTYPE html>
-    <html><head><title>Erro</title></head><body>
-    <h1>Erro 500</h1>
-    <p><?= htmlspecialchars($e->getMessage()) ?></p>
-    </body></html>
-    <?php
+    header('Location: inventory.php'); // Redireciona para inventory.php em caso de erro crítico
     exit;
 }
 ?>
-
-<?php if(isset($erro)): ?>
-    <div class="alert alert-danger"><?= $erro ?></div>
-<?php endif; ?>
 
 <div class="card">
     <div class="card-header">
@@ -124,10 +121,10 @@ try {
             
             <div class="button-group">
                 <button type="submit" class="btn btn-success">✓ Salvar</button>
-                <a href="detalhes.php?id=<?= $id ?>" class="btn btn-secondary">Cancelar</a>
+                <a href="details.php?id=<?= $id ?>" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../../includes/footer.php'; ?>
