@@ -8,8 +8,8 @@
     <title>Inventário de Impressoras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="shortcut icon" href="../../public/assets/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="../../public/assets/style.css">
+    <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/style.css">
     <style>
         /* Otimizações adicionais para touch/mobile */
         @media (max-width: 576px) {
@@ -56,28 +56,21 @@
 <nav class="navbar navbar-dark bg-dark mb-3 mb-md-4">
     <div class="container-fluid px-2 px-sm-3 d-flex align-items-center">
         
+        <?php if (isset($isDashboardPage) && $isDashboardPage): ?>
+        <button class="btn btn-dark" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="bi bi-list"></i>
+        </button>
+        <?php endif; ?>
+
         <!-- Título à esquerda -->
         <a href="/pages/printers/inventory.php" class="navbar-brand mb-0 h1 me-auto">🖨️ Inventário de impressoras</a>
 
         <!-- Grupo de botões à direita -->
         <div class="d-flex align-items-center ms-auto">
-            <!-- Botão Dashboard -->
-            <?php if (!isset($isDashboardPage) || !$isDashboardPage): ?>
-            <a href="/pages/printers/dashboard.php" class="btn btn-primary me-2 text-white text-decoration-none">
-                Volte ao Dashboard
-            </a>
-            <?php endif; ?>
             <!-- Botão Dark Mode -->
             <button id="dark-mode-toggle" class="btn btn-dark me-2" aria-label="Toggle dark mode">
                 <i class="bi bi-moon-fill"></i>
             </button>
-
-            <!-- Botão Sair (se logado) -->
-            <?php if (isset($_SESSION['user_name']) && empty($hideLogout)): ?>
-                <a href="../auth/processaLogout.php" class="btn btn-primary text-white text-decoration-none">
-                    Sair <i class="bi bi-box-arrow-right"></i>
-                </a>
-            <?php endif; ?>
         </div>
 
     </div>

@@ -29,6 +29,7 @@ if ($user && password_verify($password, $user['password'])){
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['user_name'] = $user['name'];
     $_SESSION['logado'] = true;
+    $_SESSION['is_admin'] = $user['is_admin'];
     header("Location: /pages/printers/dashboard.php");
     exit;
 } else{
