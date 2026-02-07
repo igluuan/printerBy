@@ -1,9 +1,12 @@
-/* Sidebar na DIREITA */
+/* ========================================
+   SIDEBAR
+   ======================================== */
+
 #sidebar {
     width: 250px;
     position: fixed;
     top: 0;
-    right: -250px !important; /* Forçando */
+    right: -250px;
     height: 100vh;
     z-index: 999;
     background: #343a40;
@@ -13,7 +16,7 @@
 }
 
 #sidebar.active {
-    right: 0 !important; /* FORÇANDO a mudança */
+    right: 0;
 }
 
 #sidebar .sidebar-header {
@@ -40,7 +43,8 @@
     background: #495057;
 }
 
-#sidebar ul li.active > a, a[aria-expanded="true"] {
+#sidebar ul li.active > a, 
+a[aria-expanded="true"] {
     color: #fff;
     background: #6c757d;
 }
@@ -53,6 +57,10 @@
     z-index: 1000;
 }
 
+/* ========================================
+   MAIN CONTENT SHIFT
+   ======================================== */
+
 #main-content {
     transition: all 0.3s ease;
     margin-right: 0;
@@ -62,18 +70,22 @@
     margin-right: 250px;
 }
 
-/* Responsividade */
+
+/* ========================================
+   RESPONSIVE - SIDEBAR
+   ======================================== */
+
 @media (max-width: 768px) {
     #sidebar {
-        right: -250px !important;
+        right: -250px;
     }
     #sidebar.active {
-        right: 0 !important;
+        right: 0;
     }
     #main-content {
-        margin-right: 0 !important;
+        margin-right: 0;
     }
     #main-content.shifted {
-        margin-right: 0 !important;
+        margin-right: 0;
     }
 }

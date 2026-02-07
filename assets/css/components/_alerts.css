@@ -1,0 +1,49 @@
+/* ========================================
+   ALERTS
+   ======================================== */
+
+.alert {
+    border-radius: 6px;
+    border: none;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    font-size: 0.95rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+/* ========================================
+   RESPONSIVE - ALERTS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .alert {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .alert {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+}

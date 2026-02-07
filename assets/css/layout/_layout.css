@@ -1,0 +1,72 @@
+/* ========================================
+   LAYOUT - CONTAINERS & GRID
+   ======================================== */
+
+.container {
+    padding: 1rem;
+}
+
+.container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.5rem;
+}
+
+.col-md-6 {
+    flex: 0 0 50%;
+    padding: 0.5rem;
+}
+
+.col-md-4 {
+    flex: 0 0 33.333%;
+    padding: 0.5rem;
+}
+
+.col-md-3 {
+    flex: 0 0 25%;
+    padding: 0.5rem;
+}
+
+.col-md-2 {
+    flex: 0 0 16.666%;
+    padding: 0.5rem;
+}
+
+/* ========================================
+   RESPONSIVE - LAYOUT
+   ======================================== */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0.75rem;
+    }
+
+    .col-md-6,
+    .col-md-4,
+    .col-md-3,
+    .col-md-2 {
+        flex: 0 0 100%;
+        padding: 0.5rem 0;
+    }
+
+    .row.mb-3 { /* Note: This was '.row mb-3' which is likely incorrect, changed to '.row.mb-3' */
+        margin: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0.35rem;
+    }
+}
