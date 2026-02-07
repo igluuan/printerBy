@@ -1,0 +1,35 @@
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+    .btn,
+    .card-header,
+    .card-footer,
+    .no-print,
+    .navbar,
+    #sidebar,
+    #sidebar-toggle {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+    
+    .table {
+        font-size: 0.8rem;
+    }
+    
+    .table thead th {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    .table tbody td {
+        border: 1px solid #dee2e6 !important;
+    }
+}
