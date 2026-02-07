@@ -1,25 +1,6 @@
 <?php
-ob_start();
-session_start();
-
-$hideLogout = false;
-$isDashboardPage = true;
-
-
-if (!isset($_SESSION['logado']) || $_SESSION['logado'] !== true) {
-    // Definir mensagem de toast antes de redirecionar
-    $_SESSION['toast_message'] = 'Você precisa estar logado para acessar esta página.';
-    $_SESSION['toast_type'] = 'danger';
-    header("Location: ../../public/index.php"); // Redireciona para a página de login
-    exit;
-}
-
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-
-require_once '../../config/database.php';
-require_once '../../config/timezone.php';
+// A lógica de sessão e configuração é tratada pelo roteador.
+ob_start(); // Mantido temporariamente para o caso de redirects internos como no 'try-catch'
 
 $impressoras = [];
 $marcas = [];
@@ -32,7 +13,8 @@ try {
     $_SESSION['toast_message'] = 'Erro de conexão com o banco de dados: ' . $e->getMessage();
     $_SESSION['toast_type'] = 'danger';
     ob_end_clean();
-    header("Location: ../../public/index.php"); // Redireciona em caso de erro crítico de conexão
+    // O roteador já está em public/index.php, então o redirecionamento deve ir para lá.
+    header("Location: index.php");
     exit;
 }
 
@@ -138,12 +120,13 @@ if ($conn) {
         $_SESSION['toast_message'] = 'Erro ao carregar dados das impressoras: ' . htmlspecialchars($e->getMessage());
         $_SESSION['toast_type'] = 'danger';
         ob_end_clean();
-        header("Location: inventory.php"); // Redireciona para a própria página para exibir o toast
+        header("Location: index.php?page=printers/inventory"); // Redireciona para a própria página para exibir o toast
         exit;
     }
 }
+
 ?>
-<?php include '../../includes/header.php'; ?>
+
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     
@@ -166,7 +149,7 @@ if ($conn) {
             </ul>
         </div>
         
-        <a href="cadastrar.php" class="btn btn-success" style="white-space: nowrap;">
+        <a href="index.php?page=printers/register" class="btn btn-success" style="white-space: nowrap;">
             <i class="bi bi-plus-lg"></i> <span class="d-none d-sm-inline">Adicionar</span>
         </a>
     </div>
@@ -308,7 +291,7 @@ if ($conn) {
                                 </div>
                             </div>
                             
-                            <a href="detalhes.php?id=<?= $imp['id'] ?>" class="btn btn-sm btn-primary w-100">
+                            <a href="index.php?page=printers/details&id=<?= $imp['id'] ?>" class="btn btn-sm btn-primary w-100">
                                 <i class="bi bi-eye"></i> Ver Detalhes
                             </a>
                         </div>
@@ -394,7 +377,7 @@ if ($conn) {
                                     </td>
                                     
                                     <td class="text-center">
-                                        <a href="detalhes.php?id=<?= $imp['id'] ?>" 
+                                        <a href="index.php?page=printers/details&id=<?= $imp['id'] ?>" 
                                            class="btn btn-sm btn-primary">
                                             <i class="bi bi-eye"></i> Detalhes
                                         </a>
@@ -425,7 +408,7 @@ if ($conn) {
         <div class="text-center py-5">
             <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
             <h3 class="text-muted mt-3">Nenhuma impressora encontrada</h3>
-            <p>Tente ajustar seus filtros ou <a href="inventory.php">limpar a busca</a>.</p>
+            <p>Tente ajustar seus filtros ou <a href="index.php?page=printers/inventory">limpar a busca</a>.</p>
         </div>
     <?php endif; ?>
 </div>
@@ -652,4 +635,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<?php include '../../includes/footer.php'; ?>
+

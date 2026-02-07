@@ -1,18 +1,6 @@
 <?php
-session_start();
-require_once dirname(__DIR__) . '/../config/database.php';
-require_once dirname(__DIR__) . '/../config/timezone.php';
-
-$isDashboardPage = false;
-
-
-if (!isset($_SESSION['logado']) || $_SESSION['logado'] !== true) {
-    // Definir mensagem de toast antes de redirecionar
-    $_SESSION['toast_message'] = 'Você precisa estar logado para acessar esta página.';
-    $_SESSION['toast_type'] = 'danger';
-    header("Location: /index.php"); // Redireciona para a página de login
-    exit;
-}
+// A lógica de verificação de sessão e includes agora está no roteador.
+// O roteador também já carrega os arquivos de configuração e banco de dados.
 
 $conn = Database::getInstance();
 
@@ -74,7 +62,6 @@ $ultimas_manutencoes = $stmt->fetchAll();
 // Média de páginas por equipamento
 $media_paginas = $total_equipamentos > 0 ? round($total_paginas / $total_equipamentos) : 0;
 
-include dirname(__DIR__) . '/../includes/header.php';
 ?>
 
 <div class="mt-4">
@@ -87,11 +74,12 @@ include dirname(__DIR__) . '/../includes/header.php';
         </div>
         <div class="text-end">
             <small class="text-muted">Última atualização: <?= date('d/m/Y H:i') ?></small><br>
-            <a href="/pages/printers/inventory.php" class="btn btn-outline-primary btn-sm mt-2">
+            <a href="/public/index.php?page=printers/inventory" class="btn btn-outline-primary btn-sm mt-2">
                 <i class="bi bi-list-ul"></i> Ver Todos Equipamentos
             </a>
         </div>
     </div>
+
 
     <!-- ========================================
          CARDS DE ESTATÍSTICAS PRINCIPAIS
@@ -290,4 +278,3 @@ include dirname(__DIR__) . '/../includes/header.php';
     </div>
 </div>
 </div>
-<?php include dirname(__DIR__) . '/../includes/footer.php'; ?>

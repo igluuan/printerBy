@@ -1,13 +1,5 @@
 <?php
 ob_start();
-session_start();
-
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-
-require_once '../../config/database.php';
-require_once '../../config/timezone.php';
 
 $marcas_modelos = [];
 try {
@@ -26,7 +18,6 @@ try {
     }
     
 } catch (Exception $e) {
-    // Fallback para o caso de erro no banco, pode ser removido em produção
     $_SESSION['toast_message'] = "Erro ao carregar lista de modelos: " . $e->getMessage();
     $_SESSION['toast_type'] = 'danger';
     $marcas_modelos = [
@@ -46,12 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $status = trim($_POST['status'] ?? 'equipamento_completo');
         $contagem_paginas = isset($_POST['contagem_paginas']) ? (int)$_POST['contagem_paginas'] : 0;
         
-        // Validação básica
         if (empty($modelo) || empty($marca) || empty($numero_serie)) {
              $_SESSION['toast_message'] = "Marca, Modelo e Número de Série são obrigatórios.";
              $_SESSION['toast_type'] = 'danger';
              ob_end_clean();
-             header('Location: register.php');
+             header('Location: index.php?page=printers/register');
              exit;
         }
 
@@ -73,30 +63,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['toast_message'] = "Impressora cadastrada com sucesso!";
             $_SESSION['toast_type'] = 'success';
             ob_end_clean();
-            header('Location: /pages/printers/inventory.php');
+            header('Location: index.php?page=printers/inventory');
             exit;
         } else {
             $_SESSION['toast_message'] = "Erro: Falha ao inserir dados no banco.";
             $_SESSION['toast_type'] = 'danger';
             ob_end_clean();
-            header('Location: register.php');
+            header('Location: index.php?page=printers/register');
             exit;
         }
     } catch(Exception $e) {
         $_SESSION['toast_message'] = "Erro ao cadastrar: " . $e->getMessage();
         $_SESSION['toast_type'] = 'danger';
         ob_end_clean();
-        header('Location: register.php');
+        header('Location: index.php?page=printers/register');
         exit;
     }
 }
+ob_end_clean();
 ?>
-<!-- Incluir o cabeçalho -->
-<?php include '../../includes/header.php'; ?>
 
 <div class="card">
     <div class="card-header">
-        <h4 style="font-size: clamp(1rem, 2vw, 1.25rem);">Cadastrar Nova Impressora</h4>
+        <h4 class="mb-0"><i class="bi bi-printer-fill"></i> Cadastrar Nova Impressora</h4>
     </div>
     <div class="card-body">
         <form method="POST">
@@ -140,22 +129,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label class="form-label">Status *</label>
                     <select name="status" class="form-select" required>
                         <option value="">-- Selecione um status --</option>
-                        <option value="equipamento_completo" selected> Equipamento Completo</option>
-                        <option value="equipamento_manutencao">Equipamento Precisa de Manutenção</option>
-                        <option value="inativo">Inativo</option>
+                        <option value="equipamento_completo" selected>✓ Equipamento Completo</option>
+                        <option value="equipamento_manutencao">⚙️ Requer Manutenção</option>
+                        <option value="inativo">✗ Inativo</option>
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Contagem de Páginas</label>
-                    <input type="number" name="contagem_paginas" class="form-control" value="0" placeholder="0">
-                    <small class="form-text text-muted">Opcional: Quantidade inicial de páginas</small>
+                    <input type="number" name="contagem_paginas" class="form-control" value="0" placeholder="0" min="0">
                 </div>
             </div>
             
-            <!-- BOTÕES DE AÇÃO -->
-            <div class="button-group">
-                <button type="submit" class="btn btn-success">✓ Cadastrar</button>
-                <a href="../public/index.php" class="btn btn-secondary">Cancelar</a>
+            <div class="card-footer bg-light d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Cadastrar
+                </button>
+                <a href="index.php?page=printers/inventory" class="btn btn-secondary ms-auto">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </a>
             </div>
         </form>
     </div>
@@ -163,34 +154,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Passa os dados do PHP para o JavaScript
     const modelosPorMarca = <?= json_encode($marcas_modelos) ?>;
 
     const marcaSelect = document.getElementById('marca-select');
     const modeloSelect = document.getElementById('modelo-select');
 
     marcaSelect.addEventListener('change', function() {
-        const marcaSelecionada = this.value;
+        const marcaSelecionada = this.value.toUpperCase();
         
-        // Limpa e desabilita o select de modelos
         modeloSelect.innerHTML = '';
         modeloSelect.disabled = true;
 
         if (marcaSelecionada && modelosPorMarca[marcaSelecionada]) {
-            // Habilita e adiciona a opção padrão
             modeloSelect.disabled = false;
             modeloSelect.add(new Option('Selecione um modelo...', ''));
 
-            // Popula com os modelos da marca selecionada
             modelosPorMarca[marcaSelecionada].forEach(function(modelo) {
                 modeloSelect.add(new Option(modelo, modelo));
             });
         } else {
-             // Se nenhuma marca for selecionada
             modeloSelect.add(new Option('Selecione uma marca primeiro', ''));
         }
     });
 });
 </script>
-
-<?php include '../../includes/footer.php'; ?>

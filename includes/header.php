@@ -73,7 +73,7 @@ if ($showSidebar) {
         <?php endif; ?>
 
         <!-- Título à esquerda -->
-        <a href="/pages/printers/inventory.php" class="navbar-brand mb-0 h1 me-auto">🖨️ Inventário de impressoras</a>
+        <a href="/public/index.php?page=printers/inventory" class="navbar-brand mb-0 h1 me-auto">🖨️ Inventário de impressoras</a>
 
         <!-- Grupo de botões à direita -->
         <div class="d-flex align-items-start ms-auto">
